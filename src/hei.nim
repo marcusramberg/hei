@@ -32,46 +32,48 @@ const commandsHelp: seq[Command] = @[
   Command(name: "search", description: "Search nixpkgs for a package"),
   Command(name: "show", args: "[ARGS...]", description: "Show your flake"),
   Command(name: "ssh", args: "HOST [COMMAND]",
-      description: "Run a bin/hey command on a remote NixOS system"),
+      description: "Run a hei command on a remote NixOS system"),
   Command(name: "swap", args: "PATH [PATH...]",
       description: "Recursively swap nix-store symlinks with copies (or back)."),
   Command(name: "test", description: "Quickly rebuild, for quick iteration"),
-  Command(name: "theme", args: "THEME_NAME",
-      description: "Quickly swap to another theme module"),
+  # Command(name: "theme", args: "THEME_NAME",
+    #     description: "Quickly swap to another theme module"),
   Command(name: "upgrade", description: "Update all flakes and rebuild system"),
   Command(name: "update", args: "[ INPUT...]",
       description: "Update specific flakes or all of them"),
 ]
 
 when isMainModule:
-  for kind, key, value in getOpt():
-    case kind
-    of cmdEnd: break
-    of cmdShortOption, cmdLongOption:
-      if key == "f" or key == "flake":
-        flake = value
-      elif key == "d" or key == "dryrun":
-        putEnv("NIX_DEBUG", "1")
-      elif key == "D" or key == "debug":
-        putEnv("NIX_DEBUG", "1")
-        putEnv("NIX_SHOW_TRACE", "1")
-      elif key == "v" or key == "version":
-        echo fmt"hei 0.0.1 - Running on {hostOs}({hostCPU})"
+  var p = initOptParser()
+  while true:
+    p.next()
+    case p.kind
+      of cmdend: break
+      of cmdshortoption, cmdlongoption:
+        if p.key == "f" or p.key == "flake":
+          flake = p.val
+        elif p.key == "d" or p.key == "dryrun":
+          putEnv("NIX_DEBUG", "1")
+        elif p.key == "D" or p.key == "debug":
+          putEnv("NIX_DEBUG", "1")
+          putEnv("NIX_SHOW_TRACE", "1")
+        elif p.key == "v" or p.key == "version":
+          echo fmt"hei 0.0.1 - running on {hostos}({hostcpu})"
+          quit()
+        elif p.key == "h" or p.key == "help":
+          break
+        elif ["i", "a", "q", "e", "p"].contains(p.key):
+          # run nix-env with the original command line arguments
+          echo "forwarding to nix-env ..."
+          let res = execshellcmd "nix-env " & commandlineparams().join(" ")
+          system.quit(res)
+        else:
+          echo "Unknown option: ", p.key, ". run `hei` for help."
+          quit()
+      of cmdargument:
+        var args = @[flake, p.cmdlinerest()]
+        dispatchcommand(p.key, args)
         quit()
-      elif key == "h" or key == "help":
-        break
-        # run nix-env with the original command line arguments
-      elif ["i", "A", "q", "e", "p"].contains(key):
-        echo "Forwarding to nix-env ..."
-        let res = execShellCmd "nix-env " & commandLineParams().join(" ")
-        system.quit(res)
-      else:
-        echo "Unknown option: ", key, ". Run `hei` for help."
-        quit()
-    of cmdArgument:
-      var args = @[flake] & commandLineParams()
-      dispatchCommand(key, args)
-      quit()
 
   echo """Error: No command specified.
 

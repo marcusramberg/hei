@@ -11,7 +11,7 @@
         pkgs = nixpkgs.legacyPackages.${system}.pkgs;
       in
       {
-        packages.hei = pkgs.nim2Packages.buildNimPackage {
+        packages.default = pkgs.nim2Packages.buildNimPackage {
           name = "hei";
           version = 0.1;
           src = ./.;
