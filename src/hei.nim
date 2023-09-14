@@ -1,9 +1,9 @@
-import std / [parseopt, os, envvars]
+import std / [parseopt, os, tables, envvars]
 
 import strformat, strutils, sequtils
-import utils
-let flakePaths = @["/etc/nixos", "~/.config/nix-darwin"]
+import hei/[commands, utils]
 
+var flakePaths = @["/etc/nixos", "~/.config/nix-darwin"]
 if existsEnv("NIX_SYSTEM_FLAKE"):
   let envFlake = getEnv("NIX_SYSTEM_FLAKE")
   flakePaths.insert(@[envFlake])
@@ -13,15 +13,15 @@ if flake == "":
   quit()
 
 type Command = object
-
   name: string
   description: string
   args: string
 
-const commands: seq[Command] = @[
+const commandsHelp: seq[Command] = @[
   Command(name: "check", description: "Run 'nix flake check' on your dotfiles"),
   Command(name: "gc", description: "Garbage collect & optimize nix store"),
-  Command(name: "help [SUBCOMMAND]", description: "Show usage information for this script or a subcommand"),
+  Command(name: "help", args: "[SUBCOMMAND]",
+      description: "Show usage information for this script or a subcommand"),
   Command(name: "generations", description: "Explore, manage, diff across generations"),
   Command(name: "info", args: "REPO [QUERY]",
       description: "Retrieve details (including SHA) for a REPO."),
@@ -54,25 +54,28 @@ when isMainModule:
         break
         # run nix-env with the original command line arguments
       elif ["i", "A", "q", "e", "p"].contains(key):
+        echo "Forwarding to nix-env ..."
         let res = execShellCmd "nix-env " & commandLineParams().join(" ")
-        echo "Fowarding to nix-env ..."
         system.quit(res)
       else:
         echo "Unknown option: ", key, ". Run `hei` for help."
         quit()
     of cmdArgument:
-      echo "command: ", key
+      var args = @[flake] & commandLineParams()
+      dispatchCommand(key, args)
+      quit()
+
   echo """hei - Welcome to a simpler nix experience
 
   Note: `hei` can also be used as a shortcut for nix-env:
     hei -q
 
     hei -iA nixos.htop
-    hei -e htop
 
+    hei -e htop
     Available commands: """
-  for cmd in commands:
-    echo fmt"{cmd.name:<10} - {cmd.description}"
+  for cmd in commandsHelp:
+    echo fmt"{cmd.name:<12}  {cmd.args:<15}  {cmd.description}"
   echo """
     Options:
     -d, --dryrun                     Don't change anything; perform dry run
