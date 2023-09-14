@@ -19,6 +19,7 @@ type Command = object
   args: string
 
 const commandsHelp: seq[Command] = @[
+  Command(name: "build", description: "Run build with full logs"),
   Command(name: "check", description: "Run 'nix flake check' on your dotfiles"),
   Command(name: "gc", description: "Garbage collect & optimize nix store"),
   Command(name: "help", args: "[SUBCOMMAND]",

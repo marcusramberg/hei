@@ -14,17 +14,21 @@
         packages.default = pkgs.nim2Packages.buildNimPackage {
           name = "hei";
           version = 0.1;
+          nimBinOnly = true;
           src = ./.;
           buildinputs = with pkgs; [
             nim2
             nimble-unwrapped
+            nix-output-monitor
           ];
         };
-        devShells.default = pkgs.mkShell {
+          devShells.default = pkgs.mkShell {
         buildInputs = with pkgs; [
             nim2
+            nim-unwrapped-2
             nim2Packages.safeseq
             nimble-unwrapped
+            nix-output-monitor
           ];
         };
       }
