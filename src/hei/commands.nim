@@ -30,6 +30,10 @@ dispatchTable["rebuild"] = proc(args: seq[string]) =
     let res = execShellCmd "sudo nixos-rebuild switch --flake " & args[0]
     system.quit(res)
 
+dispatchTable["upgrade"] = proc(args: seq[string]) =
+  discard execShellCmd "nix flake update " & args[0]
+  dispatchTable["rebuild"](args)
+
 proc dispatchCommand*(cmd: string, args: seq[string]) =
   if dispatchTable.hasKey(cmd):
     dispatchTable[cmd](args)
