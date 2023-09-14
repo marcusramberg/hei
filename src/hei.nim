@@ -48,7 +48,7 @@ when isMainModule:
     of cmdEnd: break
     of cmdShortOption, cmdLongOption:
       if key == "v" or key == "version":
-        echo "hei 0.0.1"
+        echo fmt"hei 0.0.1 - Running on {hostOs}({hostCPU})"
         quit()
       elif key == "h" or key == "help":
         break
