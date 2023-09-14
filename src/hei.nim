@@ -7,7 +7,7 @@ var flakePaths = @["/etc/nixos", "~/.config/nix-darwin"]
 if existsEnv("NIX_SYSTEM_FLAKE"):
   let envFlake = getEnv("NIX_SYSTEM_FLAKE")
   flakePaths.insert(@[envFlake])
-let flake = findFlake(flakePaths)
+var flake = findFlake(flakePaths)
 if flake == "":
   echo "No system flake found in ", flakePaths
   echo "If your system flake is in a different location, set the NIX_SYSTEM_FLAKE environment variable"
@@ -48,7 +48,14 @@ when isMainModule:
     case kind
     of cmdEnd: break
     of cmdShortOption, cmdLongOption:
-      if key == "v" or key == "version":
+      if key == "f" or key == "flake":
+        flake = value
+      elif key == "d" or key == "dryrun":
+        putEnv("NIX_DEBUG", "1")
+      elif key == "D" or key == "debug":
+        putEnv("NIX_DEBUG", "1")
+        putEnv("NIX_SHOW_TRACE", "1")
+      elif key == "v" or key == "version":
         echo fmt"hei 0.0.1 - Running on {hostOs}({hostCPU})"
         quit()
       elif key == "h" or key == "help":
