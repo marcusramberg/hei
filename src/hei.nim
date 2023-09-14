@@ -66,19 +66,25 @@ when isMainModule:
       dispatchCommand(key, args)
       quit()
 
-  echo """hei - Welcome to a simpler nix experience
+  echo """Error: No command specified.
 
-  Note: `hei` can also be used as a shortcut for nix-env:
-    hei -q
+ usage:  hei [global-options] [command] [sub-options]
 
-    hei -iA nixos.htop
+Welcome to a simpler nix experience (inspired by hey by hlissner)
 
-    hei -e htop
-    Available commands: """
+Note: `hei` can also be used as a shortcut for nix-env:
+
+  hei -q
+  hei -iA nixos.htop
+  hei -e htop
+
+
+Available commands: """
   for cmd in commandsHelp:
-    echo fmt"{cmd.name:<12}  {cmd.args:<15}  {cmd.description}"
+    echo fmt"  {cmd.name:<12}  {cmd.args:<15}  {cmd.description}"
   echo """
-    Options:
+
+ Options:
     -d, --dryrun                     Don't change anything; perform dry run
     -D, --debug                      Show trace on nix errors
     -f, --flake URI                  Change target flake to URI
