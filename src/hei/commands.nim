@@ -23,8 +23,8 @@ dispatchTable["update"] = proc(args: seq[string]) =
   system.quit(res)
 
 dispatchTable["rebuild"] = proc(args: seq[string]) =
-  if hostOs == "darwin":
-    let res = execShellCmd "nix-darwin rebuild switch --flake " & args[0]
+  if hostOs == "macosx":
+    let res = execShellCmd "darwin-rebuild switch --flake " & args[0]
     system.quit(res)
   else:
     let res = execShellCmd "sudo nixos-rebuild switch --flake " & args[0]
