@@ -10,6 +10,7 @@ if existsEnv("NIX_SYSTEM_FLAKE"):
 let flake = findFlake(flakePaths)
 if flake == "":
   echo "No system flake found in ", flakePaths
+  echo "If your system flake is in a different location, set the NIX_SYSTEM_FLAKE environment variable"
   quit()
 
 type Command = object
