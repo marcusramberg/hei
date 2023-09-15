@@ -1,4 +1,4 @@
-import std / [parseopt, os, tables, envvars]
+import std / [parseopt, os, envvars]
 
 import strformat, strutils, sequtils
 import hei/[commands, utils]
@@ -72,7 +72,7 @@ when isMainModule:
           echo "Unknown option: ", p.key, ". run `hei` for help."
           quit()
       of cmdargument:
-        var args = @[flake, p.cmdlinerest()]
+        var args = @[flake] & p.remainingArgs()
         dispatchcommand(p.key, args)
         quit()
 

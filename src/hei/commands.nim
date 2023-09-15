@@ -41,6 +41,10 @@ dispatchTable["rebuild"] = proc(args: seq[string]) =
     let res = execShellCmd "sudo nixos-rebuild switch --flake " & args.join(" ")
     system.quit(res)
 
+dispatchTable["ssh"] = proc(args: seq[string]) =
+  let res = execShellCmd "ssh " & args[1] & " hei " & args[2..args.high].join(" ")
+  system.quit(res)
+
 dispatchTable["test"] = proc(args: seq[string]) =
   dispatchTable["rebuild"](@[args[0], "--fast"])
 
