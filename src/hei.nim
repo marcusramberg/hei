@@ -7,8 +7,8 @@ var flakePaths = @["/etc/nixos", "~/.config/nix-darwin"]
 if existsEnv("NIX_SYSTEM_FLAKE"):
   let envFlake = getEnv("NIX_SYSTEM_FLAKE")
   flakePaths.insert(@[envFlake])
-var flake = findFlake(flakePaths)
-if flake == "":
+var flakePath = findFlake(flakePaths)
+if flakePath == "":
   echo "No system flake found in ", flakePaths
   echo "If your system flake is in a different location, set the NIX_SYSTEM_FLAKE environment variable"
   quit()
@@ -52,7 +52,7 @@ when isMainModule:
       of cmdend: break
       of cmdshortoption, cmdlongoption:
         if p.key == "f" or p.key == "flake":
-          flake = p.val
+          flakePath = p.val
         elif p.key == "d" or p.key == "dryrun":
           putEnv("NIX_DEBUG", "1")
         elif p.key == "D" or p.key == "debug":
@@ -72,8 +72,7 @@ when isMainModule:
           echo "Unknown option: ", p.key, ". run `hei` for help."
           quit()
       of cmdargument:
-        var args = @[flake] & p.remainingArgs()
-        dispatchcommand(p.key, args)
+        dispatchcommand(p.key, flakePath, p.remainingArgs)
         quit()
 
   echo """Error: No command specified.
