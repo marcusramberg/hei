@@ -1,14 +1,12 @@
-import std/[os, strutils, tables, tempfiles]
-
+import std/[parseopt, os, strutils, tables, tempfiles]
 var dispatchTable = initTable[string, proc(flakePath: string, args: seq[string])]()
 
 dispatchTable["help"] = proc (flakePath: string, args: seq[string]) =
   echo "help"
-
 dispatchTable["build"] = proc(flakePath: string, args: seq[string]) =
-  let res = execShellCmd "nix build -L " & args.join(" ")
-  system.quit(res)
 
+  let res = execShellCmd "nix build -L " & args[0]
+  system.quit(res)
 dispatchTable["check"] = proc(flakePath: string, args: seq[string]) =
   let res = execShellCmd "nix flake check " & flakePath
   system.quit(res)
@@ -18,11 +16,30 @@ dispatchTable["show"] = proc(flakePath: string, args: seq[string]) =
   system.quit(res)
 
 dispatchTable["gc"] = proc(flakePath: string, args: seq[string]) =
-  let res = execShellCmd "nix gc"
-  system.quit(res)
+  var all, sys = false
+  for kind, key, val in getopt(args):
+    case kind
+    of cmdLongOption, cmdShortOption:
+      case key
+      of "a", "all": all = true
+      of "s", "system": sys = true
+    of cmdArgument:
+      echo "arg"
+    of cmdEnd:
+      assert(false)
+  if all or sys:
+    echo "Cleaning up your system profile"
+    discard execShellCmd "sudo nix-collect-garbage -d"
+    discard execShellCmd "sudo nix-store --optimise"
+    discard execShellCmd "sudo nix-env --delete-generations old --profile /nix/var/nix/profiles/system"
+    discard execShellCmd "sudo /nix/var/nix/profiles/system/bin/switch-to-configuration switch"
+  if all and not sys:
+    discard execShellCmd "nix-collect-garbage -d"
+  system.quit(0)
 
 dispatchTable["repl"] = proc(flakePath: string, args: seq[string]) =
   let (tmpfile, path) = createTempFile("dotfiles-repl.nix", "_end.tmp")
+
   tmpfile.write("import " & flakePath & "(builtins.getFlake \"" & flakePath & "\")")
   let res = execShellCmd "nix repl \\<nixpkgs\\> " & path
   system.quit(res)
