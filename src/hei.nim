@@ -51,19 +51,20 @@ when isMainModule:
     case p.kind
       of cmdend: break
       of cmdshortoption, cmdlongoption:
-        if p.key == "f" or p.key == "flake":
+        case p.key
+        of "f", "flake":
           flakePath = p.val
-        elif p.key == "d" or p.key == "dryrun":
+        of "d", "dryrun":
           putEnv("NIX_DEBUG", "1")
-        elif p.key == "D" or p.key == "debug":
+        of "D", "debug":
           putEnv("NIX_DEBUG", "1")
           putEnv("NIX_SHOW_TRACE", "1")
-        elif p.key == "v" or p.key == "version":
+        of "v", "version":
           echo fmt"hei 0.0.1 - running on {hostos}({hostcpu})"
           quit()
-        elif p.key == "h" or p.key == "help":
+        of "h", "help":
           break
-        elif ["i", "a", "q", "e", "p"].contains(p.key):
+        of "i", "a", "q", "e", "p":
           # run nix-env with the original command line arguments
           echo "forwarding to nix-env ..."
           let res = execshellcmd "nix-env " & commandlineparams().join(" ")
