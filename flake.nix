@@ -17,17 +17,15 @@
           nimBinOnly = true;
           src = ./.;
           buildinputs = with pkgs; [
-            nim2
-            nimble-unwrapped
+            nim
             nix-output-monitor
           ];
         };
-          devShells.default = pkgs.mkShell {
-        buildInputs = with pkgs; [
-            nim2
-            nim-unwrapped-2
+        devShells.default = pkgs.mkShell {
+          buildInputs = with pkgs; [
+            nim
+            nimlsp
             nim2Packages.safeseq
-            nimble-unwrapped
             nix-output-monitor
           ];
         };
