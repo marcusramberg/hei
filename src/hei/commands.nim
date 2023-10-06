@@ -24,7 +24,7 @@ dispatchTable["gc"] = proc(flakePath: string, args: seq[string]) =
       of "a", "all": all = true
       of "s", "system": sys = true
     of cmdArgument:
-      echo "arg"
+      continue
     of cmdEnd:
       assert(false)
   if all or sys:
@@ -32,9 +32,10 @@ dispatchTable["gc"] = proc(flakePath: string, args: seq[string]) =
     discard execShellCmd "sudo nix-collect-garbage -d"
     discard execShellCmd "sudo nix-store --optimise"
     discard execShellCmd "sudo nix-env --delete-generations old --profile /nix/var/nix/profiles/system"
-    discard execShellCmd "sudo /nix/var/nix/profiles/system/bin/switch-to-configuration switch"
-  if all and not sys:
+    discard execShellCmd "sudo /nix/var/nix/profiles/system/bin/s,witch-to-configuration switch"
+  if all or not sys:
     discard execShellCmd "nix-collect-garbage -d"
+
   system.quit(0)
 
 dispatchTable["repl"] = proc(flakePath: string, args: seq[string]) =

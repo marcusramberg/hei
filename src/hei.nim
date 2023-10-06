@@ -90,6 +90,7 @@ Note: `hei` can also be used as a shortcut for nix-env:
 
 
 Available commands: """
+
   for cmd in commandsHelp:
     echo fmt"  {cmd.name:<12}  {cmd.args:<15}  {cmd.description}"
   echo """
