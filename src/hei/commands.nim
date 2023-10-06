@@ -1,12 +1,25 @@
-import std/[parseopt, os, strutils, tables, tempfiles]
+import std/[
+  os,
+  parseopt,
+  re,
+  strformat,
+  strutils,
+  tables,
+  tempfiles
+]
+
+let backupSuffix = ".nix-store-backup"
+
 var dispatchTable = initTable[string, proc(flakePath: string, args: seq[string])]()
 
 dispatchTable["help"] = proc (flakePath: string, args: seq[string]) =
   echo "help"
 dispatchTable["build"] = proc(flakePath: string, args: seq[string]) =
-
-  let res = execShellCmd "nix build -L " & args[0]
+  var argstr = args.join(" ")
+  if argstr == "": argstr = "."
+  let res = execShellCmd &"nix build -L {argstr}"
   system.quit(res)
+
 dispatchTable["check"] = proc(flakePath: string, args: seq[string]) =
   let res = execShellCmd "nix flake check " & flakePath
   system.quit(res)
@@ -56,6 +69,36 @@ dispatchTable["rebuild"] = proc(flakePath: string, args: seq[string]) =
   else:
     let res = execShellCmd "sudo nixos-rebuild switch --flake " & flakePath
     system.quit(res)
+
+dispatchTable["swap"] = proc(flakePath: string, args: seq[string]) =
+  for target in args:
+    if target.dirExists:
+      var foundBackups: seq[string] = @[]
+      echo fmt"Checking {target}"
+      for path in walkDirRec(target, checkDir = true, yieldFilter = {pcLinkToFile}):
+        if path.contains(re".nix-store-backup$"):
+          foundBackups.add(path.replace(backupSuffix, ""))
+      if foundBackups.len > 0:
+        echo "Backups found, swapping backup"
+        dispatchTable["swap"](flakePath, foundBackups)
+      else:
+        var targets: seq[string] = @[]
+        for path in walkDirRec(target, checkDir = true, yieldFilter = {pcLinkToFile}):
+          targets.add(path)
+        dispatchTable["swap"](flakePath, targets)
+    elif fmt"{target}{backupSuffix}".fileExists:
+      echo &"Unswapping {target}"
+      discard execShellCmd &"mv -i {target}.{backupSuffix} {target}"
+    elif target.fileExists:
+      if target.symlinkExists and target.expandSymlink.contains(re"^/nix/"):
+        echo &"Swapping {target}"
+        discard execShellCmd &"mv {target} {target}{backupSuffix}"
+        discard execShellCmd &"cp {target}{backupSuffix} {target}"
+      else:
+        echo &"Not swapping {target} because it is not in the nix store"
+    else:
+      echo &"No such file or directory: {target}"
+      system.quit(1)
 
 dispatchTable["ssh"] = proc(flakePath: string, args: seq[string]) =
   let res = execShellCmd "ssh " & args[0] & " hei " & args[1..args.high].join(" ")
