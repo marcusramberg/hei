@@ -79,7 +79,7 @@ dispatchTable["swap"] = proc(flakePath: string, args: seq[string]) =
         if path.contains(re".nix-store-backup$"):
           foundBackups.add(path.replace(backupSuffix, ""))
       if foundBackups.len > 0:
-        echo "Backups found, swapping backup"
+        echo "Backups found, swapping back"
         dispatchTable["swap"](flakePath, foundBackups)
       else:
         var targets: seq[string] = @[]
@@ -88,7 +88,7 @@ dispatchTable["swap"] = proc(flakePath: string, args: seq[string]) =
         dispatchTable["swap"](flakePath, targets)
     elif fmt"{target}{backupSuffix}".fileExists:
       echo &"Unswapping {target}"
-      discard execShellCmd &"mv -i {target}.{backupSuffix} {target}"
+      discard execShellCmd &"mv -i {target}{backupSuffix} {target}"
     elif target.fileExists:
       if target.symlinkExists and target.expandSymlink.contains(re"^/nix/"):
         echo &"Swapping {target}"
