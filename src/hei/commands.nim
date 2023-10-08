@@ -2,6 +2,7 @@ import std/[
   os,
   parseopt,
   re,
+  sequtils,
   strformat,
   strutils,
   tables,
@@ -70,8 +71,14 @@ dispatchTable["search"] = proc(flakePath: string, args: seq[string]) =
   system.quit(res)
 
 dispatchTable["update"] = proc(flakePath: string, args: seq[string]) =
-  let res = execShellCmd "nix flake update " & flakePath
-  system.quit(res)
+
+  if args.len == 0:
+    let res = execShellCmd "nix flake update " & flakePath & " " & args[0]
+    system.quit(res)
+  else:
+    let res = execShellCmd "nix flake lock " & flakePath &
+      join(map(args, proc(arg: string): string = fmt" --update-input {arg}"), " ")
+    system.quit(res)
 
 dispatchTable["rebuild"] = proc(flakePath: string, args: seq[string]) =
   if hostOs == "macosx":
