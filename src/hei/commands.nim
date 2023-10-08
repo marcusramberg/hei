@@ -13,7 +13,9 @@ let backupSuffix = ".nix-store-backup"
 var dispatchTable = initTable[string, proc(flakePath: string, args: seq[string])]()
 
 dispatchTable["help"] = proc (flakePath: string, args: seq[string]) =
-  echo "help"
+  echo &"Forwarding to {args[0]} --help"
+  dispatchTable[args[0]](flakePath, @["--help"])
+
 dispatchTable["build"] = proc(flakePath: string, args: seq[string]) =
   var argstr = args.join(" ")
   if argstr == "": argstr = "."
@@ -36,6 +38,12 @@ dispatchTable["gc"] = proc(flakePath: string, args: seq[string]) =
       case key
       of "a", "all": all = true
       of "s", "system": sys = true
+      of "h", "help":
+        echo "Usage: dotfiles gc [options]"
+        echo ""
+        echo "  -a, --all     Clean up all profiles"
+        echo "  -s, --system  Clean up the system profile"
+        system.quit(0)
     of cmdArgument:
       continue
     of cmdEnd:
@@ -53,9 +61,12 @@ dispatchTable["gc"] = proc(flakePath: string, args: seq[string]) =
 
 dispatchTable["repl"] = proc(flakePath: string, args: seq[string]) =
   let (tmpfile, path) = createTempFile("dotfiles-repl.nix", "_end.tmp")
-
   tmpfile.write("import " & flakePath & "(builtins.getFlake \"" & flakePath & "\")")
   let res = execShellCmd "nix repl \\<nixpkgs\\> " & path
+  system.quit(res)
+
+dispatchTable["search"] = proc(flakePath: string, args: seq[string]) =
+  let res = execShellCmd "nix search nixpkgs " & args.join(" ")
   system.quit(res)
 
 dispatchTable["update"] = proc(flakePath: string, args: seq[string]) =
