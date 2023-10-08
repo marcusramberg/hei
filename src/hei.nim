@@ -13,37 +13,6 @@ if flakePath == "":
   echo "If your system flake is in a different location, set the NIX_SYSTEM_FLAKE environment variable"
   quit()
 
-type Command = object
-  name: string
-  description: string
-  args: string
-
-const commandsHelp: seq[Command] = @[
-  Command(name: "build", description: "Run build with full logs"),
-  Command(name: "check", description: "Run 'nix flake check' on your dotfiles"),
-  Command(name: "gc", description: "Garbage collect & optimize nix store"),
-  Command(name: "help", args: "[SUBCOMMAND]",
-      description: "Show usage information for this script or a subcommand"),
-  Command(name: "generations", description: "Explore, manage, diff across generations"),
-  Command(name: "info", args: "REPO [QUERY]",
-      description: "Retrieve details (including SHA) for a REPO."),
-  Command(name: "rebuild", description: "Rebuild the current system's flake"),
-  Command(name: "repl", description: "Open a nix-repl with nixpkgs and dotfiles preloaded"),
-  Command(name: "rollback", description: "Roll back to last generation"),
-  Command(name: "search", description: "Search nixpkgs for a package"),
-  Command(name: "show", args: "[ARGS...]", description: "Show your flake"),
-  Command(name: "ssh", args: "HOST [COMMAND]",
-      description: "Run a hei command on a remote NixOS system"),
-  Command(name: "swap", args: "PATH [PATH...]",
-      description: "Recursively swap nix-store symlinks with copies (or back)."),
-  Command(name: "test", description: "Quickly rebuild, for quick iteration"),
-  # Command(name: "theme", args: "THEME_NAME",
-    #     description: "Quickly swap to another theme module"),
-  Command(name: "upgrade", description: "Update all flakes and rebuild system"),
-  Command(name: "update", args: "[ INPUT...]",
-      description: "Update specific flakes or all of them"),
-]
-
 when isMainModule:
   var p = initOptParser()
   while true:
@@ -76,30 +45,6 @@ when isMainModule:
         dispatchcommand(p.key, flakePath, p.remainingArgs)
         quit()
 
-  echo """Error: No command specified.
+  echo "Error: No command specified."
+  dispatchcommand("help", flakePath, @[])
 
- usage:  hei [global-options] [command] [sub-options]
-
-Welcome to a simpler nix experience (inspired by hey by hlissner)
-
-Note: `hei` can also be used as a shortcut for nix-env:
-
-  hei -q
-  hei -iA nixos.htop
-  hei -e htop
-
-
-Available commands: """
-
-  for cmd in commandsHelp:
-    echo fmt"  {cmd.name:<12}  {cmd.args:<15}  {cmd.description}"
-  echo """
-
- Options:
-    -d, --dryrun                     Don't change anything; perform dry run
-    -D, --debug                      Show trace on nix errors
-    -f, --flake URI                  Change target flake to URI
-    -h, --help                       Display this help, or help for a specific command
-    -i, -A, -q, -e, -p               Forward to nix-env
-
-"""
