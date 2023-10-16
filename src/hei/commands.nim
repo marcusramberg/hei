@@ -48,32 +48,32 @@ dispatchTable["help"] = proc (flakePath: string, args: seq[string]) =
     echo &"Forwarding to {args[0]} --help"
     dispatchTable[args[0]](flakePath, @["--help"])
     return
-echo """
- usage:  hei [global-options] [command] [sub-options]
+  echo """
+  usage:  hei [global-options] [command] [sub-options]
 
-Welcome to a simpler nix experience (inspired by hey by hlissner)
+  Welcome to a simpler nix experience (inspired by hey by hlissner)
 
-Note: `hei` can also be used as a shortcut for nix-env:
+  Note: `hei` can also be used as a shortcut for nix-env:
 
-  hei -q
-  hei -iA nixos.htop
-  hei -e htop
+    hei -q
+    hei -iA nixos.htop
+    hei -e htop
 
 
-Available commands: """
+  Available commands: """
 
-for cmd in commandsHelp:
-  echo fmt"  {cmd.name:<12}  {cmd.args:<15}  {cmd.description}"
-echo """
+  for cmd in commandsHelp:
+    echo fmt"  {cmd.name:<12}  {cmd.args:<15}  {cmd.description}"
+  echo """
 
- Options:
-    -d, --dryrun                     Don't change anything; perform dry run
-    -D, --debug                      Show trace on nix errors
-    -f, --flake URI                  Change target flake to URI
-    -h, --help                       Display this help, or help for a specific command
-    -i, -A, -q, -e, -p               Forward to nix-env
+  Options:
+      -d, --dryrun                     Don't change anything; perform dry run
+      -D, --debug                      Show trace on nix errors
+      -f, --flake URI                  Change target flake to URI
+      -h, --help                       Display this help, or help for a specific command
+      -i, -A, -q, -e, -p               Forward to nix-env
 
-"""
+  """
 
 dispatchTable["build"] = proc(flakePath: string, args: seq[string]) =
   var argstr = args.join(" ")
@@ -192,3 +192,4 @@ proc dispatchCommand*(cmd: string, flakePath: string, args: seq[string]) =
     dispatchTable[cmd](flakePath, args)
   else:
     echo("Unknown command: "&cmd)
+    dispatchTable["help"](flakePath, args)
