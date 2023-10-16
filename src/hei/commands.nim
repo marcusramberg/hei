@@ -191,5 +191,5 @@ proc dispatchCommand*(cmd: string, flakePath: string, args: seq[string]) =
   if dispatchTable.hasKey(cmd):
     dispatchTable[cmd](flakePath, args)
   else:
-    echo("Unknown command: "&cmd)
-    dispatchTable["help"](flakePath, args)
+    echo(&"\n  Unknown command: {cmd}\n")
+    dispatchTable["help"](flakePath, @[])
