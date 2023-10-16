@@ -4,7 +4,7 @@
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
     utils.url = "github:numtide/flake-utils";
   };
-  outputs = { nixpkgs, utils, ... }:
+  outputs = { nixpkgs, utils, self, ... }:
 
     utils.lib.eachDefaultSystem (system:
       let
@@ -16,6 +16,11 @@
           version = 0.1;
           nimBinOnly = true;
           src = ./.;
+          nativeBuildInputs = with pkgs; [
+            (writeScriptBin "git" ''
+              echo ${ self.rev or "dirty" }
+            '')
+          ];
           buildinputs = with pkgs; [
             nim
             nix-output-monitor

@@ -3,6 +3,8 @@ import std / [parseopt, os, envvars]
 import strformat, strutils, sequtils
 import hei/[commands, utils]
 
+const version = staticExec("git describe --tags HEAD")
+
 var flakePaths = @["/etc/nixos", "~/.config/nix-darwin"]
 if existsEnv("NIX_SYSTEM_FLAKE"):
   let envFlake = getEnv("NIX_SYSTEM_FLAKE")
@@ -29,7 +31,7 @@ when isMainModule:
           putEnv("NIX_DEBUG", "1")
           putEnv("NIX_SHOW_TRACE", "1")
         of "v", "version":
-          echo fmt"hei 0.0.1 - running on {hostos}({hostcpu})"
+          echo fmt"hei {version} - running on {hostos}({hostcpu})"
           quit()
         of "h", "help":
           break
@@ -45,6 +47,6 @@ when isMainModule:
         dispatchcommand(p.key, flakePath, p.remainingArgs)
         quit()
 
+  echo "WOOT"
   echo "Error: No command specified."
   dispatchcommand("help", flakePath, @[])
-
