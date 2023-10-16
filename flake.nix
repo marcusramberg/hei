@@ -18,7 +18,7 @@
           src = ./.;
           nativeBuildInputs = with pkgs; [
             (writeScriptBin "git" ''
-              echo ${ self.rev or "dirty" }
+              echo ${ self.ref or "dirty" }
             '')
           ];
           buildinputs = with pkgs; [
