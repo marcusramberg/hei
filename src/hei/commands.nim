@@ -9,6 +9,7 @@ import std/[
   tempfiles
 ]
 
+type CommandProc = proc (flakePath: string, args: seq[string]): int
 type Command = object
   name: string
   description: string
@@ -41,13 +42,12 @@ const commandsHelp: seq[Command] = @[
 ]
 let backupSuffix = ".nix-store-backup"
 
-var dispatchTable = initTable[string, proc(flakePath: string, args: seq[string])]()
+var dispatchTable = initTable[string, CommandProc]()
 
-dispatchTable["help"] = proc (flakePath: string, args: seq[string]) =
+dispatchTable["help"] = proc(flakePath: string, args: seq[string]): int =
   if args.len > 0:
     echo &"Forwarding to {args[0]} --help"
-    dispatchTable[args[0]](flakePath, @["--help"])
-    return
+    return dispatchTable[args[0]](flakePath, @["--help"])
   echo """
   usage:  hei [global-options] [command] [sub-options]
 
@@ -75,21 +75,21 @@ dispatchTable["help"] = proc (flakePath: string, args: seq[string]) =
 
   """
 
-dispatchTable["build"] = proc(flakePath: string, args: seq[string]) =
+dispatchTable["build"] = proc(flakePath: string, args: seq[string]): int =
   var argstr = args.join(" ")
   if argstr == "": argstr = "."
-  let res = execShellCmd &"nix build -L {argstr}"
-  system.quit(res)
+  return execShellCmd &"nix build -L {argstr}"
 
-dispatchTable["check"] = proc(flakePath: string, args: seq[string]) =
+
+dispatchTable["check"] = proc(flakePath: string, args: seq[string]): int =
   let res = execShellCmd "nix flake check " & flakePath
-  system.quit(res)
+  return(res)
 
-dispatchTable["show"] = proc(flakePath: string, args: seq[string]) =
+dispatchTable["show"] = proc(flakePath: string, args: seq[string]): int =
   let res = execShellCmd "nix flake show " & flakePath
-  system.quit(res)
+  return(res)
 
-dispatchTable["gc"] = proc(flakePath: string, args: seq[string]) =
+dispatchTable["gc"] = proc(flakePath: string, args: seq[string]): int =
   var all, sys = false
   for kind, key, val in getopt(args):
     case kind
@@ -102,7 +102,7 @@ dispatchTable["gc"] = proc(flakePath: string, args: seq[string]) =
         echo ""
         echo "  -a, --all     Clean up all profiles"
         echo "  -s, --system  Clean up the system profile"
-        system.quit(0)
+        return 0
     of cmdArgument:
       continue
     of cmdEnd:
@@ -115,38 +115,31 @@ dispatchTable["gc"] = proc(flakePath: string, args: seq[string]) =
     discard execShellCmd "sudo /nix/var/nix/profiles/system/bin/s,witch-to-configuration switch"
   if all or not sys:
     discard execShellCmd "nix-collect-garbage -d"
+  return 0
 
-  system.quit(0)
-
-dispatchTable["repl"] = proc(flakePath: string, args: seq[string]) =
+dispatchTable["repl"] = proc(flakePath: string, args: seq[string]): int =
   let (tmpfile, path) = createTempFile("dotfiles-repl.nix", "_end.tmp")
   tmpfile.write("import " & flakePath & "(builtins.getFlake \"" & flakePath & "\")")
-  let res = execShellCmd "nix repl \\<nixpkgs\\> " & path
-  system.quit(res)
+  execShellCmd "nix repl \\<nixpkgs\\> " & path
 
-dispatchTable["search"] = proc(flakePath: string, args: seq[string]) =
-  let res = execShellCmd "nix search nixpkgs " & args.join(" ")
-  system.quit(res)
+dispatchTable["search"] = proc(flakePath: string, args: seq[string]): int =
+  execShellCmd "nix search nixpkgs " & args.join(" ")
 
-dispatchTable["update"] = proc(flakePath: string, args: seq[string]) =
+dispatchTable["update"] = proc(flakePath: string, args: seq[string]): int =
 
   if args.len == 0:
     let res = execShellCmd "nix flake update " & flakePath & " " & args[0]
-    system.quit(res)
+    return res
   else:
-    let res = execShellCmd "nix flake lock " & flakePath &
+    return execShellCmd "nix flake lock " & flakePath &
       join(map(args, proc(arg: string): string = fmt" --update-input {arg}"), " ")
-    system.quit(res)
 
-dispatchTable["rebuild"] = proc(flakePath: string, args: seq[string]) =
+dispatchTable["rebuild"] = proc(flakePath: string, args: seq[string]): int =
   if hostOs == "macosx":
-    let res = execShellCmd "darwin-rebuild switch --flake " & flakePath
-    system.quit(res)
-  else:
-    let res = execShellCmd "sudo nixos-rebuild switch --flake " & flakePath
-    system.quit(res)
+    return execShellCmd "darwin-rebuild switch --flake " & flakePath
+  execShellCmd "sudo nixos-rebuild switch --flake " & flakePath
 
-dispatchTable["swap"] = proc(flakePath: string, args: seq[string]) =
+dispatchTable["swap"] = proc(flakePath: string, args: seq[string]): int =
   for target in args:
     if target.dirExists:
       var foundBackups: seq[string] = @[]
@@ -156,12 +149,12 @@ dispatchTable["swap"] = proc(flakePath: string, args: seq[string]) =
           foundBackups.add(path.replace(backupSuffix, ""))
       if foundBackups.len > 0:
         echo "Backups found, swapping back"
-        dispatchTable["swap"](flakePath, foundBackups)
+        discard dispatchTable["swap"](flakePath, foundBackups)
       else:
         var targets: seq[string] = @[]
         for path in walkDirRec(target, checkDir = true, yieldFilter = {pcLinkToFile}):
           targets.add(path)
-        dispatchTable["swap"](flakePath, targets)
+        discard dispatchTable["swap"](flakePath, targets)
     elif fmt"{target}{backupSuffix}".fileExists:
       echo &"Unswapping {target}"
       discard execShellCmd &"mv -i {target}{backupSuffix} {target}"
@@ -174,22 +167,20 @@ dispatchTable["swap"] = proc(flakePath: string, args: seq[string]) =
         echo &"Not swapping {target} because it is not in the nix store"
     else:
       echo &"No such file or directory: {target}"
-      system.quit(1)
+      return 1
 
-dispatchTable["ssh"] = proc(flakePath: string, args: seq[string]) =
-  let res = execShellCmd "ssh " & args[0] & " hei " & args[1..args.high].join(" ")
-  system.quit(res)
+dispatchTable["ssh"] = proc(flakePath: string, args: seq[string]): int =
+  execShellCmd "ssh " & args[0] & " hei " & args[1..args.high].join(" ")
 
-dispatchTable["test"] = proc(flakePath: string, args: seq[string]) =
+dispatchTable["test"] = proc(flakePath: string, args: seq[string]): int =
   dispatchTable["rebuild"](flakePath, @["--fast"])
 
-dispatchTable["upgrade"] = proc(flakePath: string, args: seq[string]) =
+dispatchTable["upgrade"] = proc(flakePath: string, args: seq[string]): int =
   discard execShellCmd "nix flake update " & flakePath
   dispatchTable["rebuild"](flakePath, args)
 
 proc dispatchCommand*(cmd: string, flakePath: string, args: seq[string]) =
   if dispatchTable.hasKey(cmd):
-    dispatchTable[cmd](flakePath, args)
-  else:
-    echo(&"\n  Unknown command: {cmd}\n")
-    dispatchTable["help"](flakePath, @[])
+    quit(dispatchTable[cmd](flakePath, args))
+  echo(&"\n  Unknown command: {cmd}\n")
+  system.quit dispatchTable["help"](flakePath, @[])
