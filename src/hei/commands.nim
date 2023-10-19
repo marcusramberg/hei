@@ -10,177 +10,194 @@ import std/[
 ]
 
 type CommandProc = proc (flakePath: string, args: seq[string]): int
-type Command = object
-  name: string
-  description: string
-  args: string
 
-const commandsHelp: seq[Command] = @[
-  Command(name: "build", description: "Run build with full logs"),
-  Command(name: "check", description: "Run 'nix flake check' on your dotfiles"),
-  Command(name: "gc", description: "Garbage collect & optimize nix store"),
-  Command(name: "help", args: "[SUBCOMMAND]",
-      description: "Show usage information for this script or a subcommand"),
-  Command(name: "generations", description: "Explore, manage, diff across generations"),
-  Command(name: "info", args: "REPO [QUERY]",
-      description: "Retrieve details (including SHA) for a REPO."),
-  Command(name: "rebuild", description: "Rebuild the current system's flake"),
-  Command(name: "repl", description: "Open a nix-repl with nixpkgs and dotfiles preloaded"),
-  Command(name: "rollback", description: "Roll back to last generation"),
-  Command(name: "search", description: "Search nixpkgs for a package"),
-  Command(name: "show", args: "[ARGS...]", description: "Show your flake"),
-  Command(name: "ssh", args: "HOST [COMMAND]",
-      description: "Run a hei command on a remote NixOS system"),
-  Command(name: "swap", args: "PATH [PATH...]",
-      description: "Recursively swap nix-store symlinks with copies (or back)."),
-  Command(name: "test", description: "Quickly rebuild, for quick iteration"),
-  # Command(name: "theme", args: "THEME_NAME",
-    #     description: "Quickly swap to another theme module"),
-  Command(name: "upgrade", description: "Update all flakes and rebuild system"),
-  Command(name: "update", args: "[ INPUT...]",
-      description: "Update specific flakes or all of them"),
-]
+type Command = object
+  description: string = ""
+  arg: string = ""
+  body: CommandProc
+
 let backupSuffix = ".nix-store-backup"
 
-var dispatchTable = initTable[string, CommandProc]()
+template makeCommand(help: string, args: string, command: untyped): Command =
+  let cmd: CommandProc = command
+  Command(description: help, arg: args, body: cmd)
 
-dispatchTable["help"] = proc(flakePath: string, args: seq[string]): int =
-  if args.len > 0:
-    echo &"Forwarding to {args[0]} --help"
-    return dispatchTable[args[0]](flakePath, @["--help"])
-  echo """
-  usage:  hei [global-options] [command] [sub-options]
+var dispatchTable = initOrderedTable[string, Command]()
 
-  Welcome to a simpler nix experience (inspired by hey by hlissner)
+dispatchTable["help"] = makeCommand(
+  help = "Call help with a command to get more info",
+  args = "[SUBCOMMAND]"):
+  proc(flakePath: string, args: seq[string]): int =
+    if args.len > 0:
+      echo &"Forwarding to {args[0]} --help"
+      return dispatchTable[args[0]].body(flakePath, @["--help"])
+    echo """
+    usage:  hei [global-options] [command] [sub-options]
 
-  Note: `hei` can also be used as a shortcut for nix-env:
+    Welcome to a simpler nix experience (inspired by hey by hlissner)
 
-    hei -q
-    hei -iA nixos.htop
-    hei -e htop
+    Note: `hei` can also be used as a shortcut for nix-env:
 
-
-  Available commands: """
-
-  for cmd in commandsHelp:
-    echo fmt"  {cmd.name:<12}  {cmd.args:<15}  {cmd.description}"
-  echo """
-
-  Options:
-      -d, --dryrun                     Don't change anything; perform dry run
-      -D, --debug                      Show trace on nix errors
-      -f, --flake URI                  Change target flake to URI
-      -h, --help                       Display this help, or help for a specific command
-      -i, -A, -q, -e, -p               Forward to nix-env
-
-  """
-
-dispatchTable["build"] = proc(flakePath: string, args: seq[string]): int =
-  var argstr = args.join(" ")
-  if argstr == "": argstr = "."
-  return execShellCmd &"nix build -L {argstr}"
+      hei -q
+      hei -iA nixos.htop
+      hei -e htop
 
 
-dispatchTable["check"] = proc(flakePath: string, args: seq[string]): int =
-  let res = execShellCmd "nix flake check " & flakePath
-  return(res)
+    Available commands: """
 
-dispatchTable["show"] = proc(flakePath: string, args: seq[string]): int =
-  let res = execShellCmd "nix flake show " & flakePath
-  return(res)
+    for cmd in dispatchTable.keys:
+      echo fmt"  {cmd:<12}  {dispatchTable[cmd].arg:<15}  {dispatchTable[cmd].description}"
+    echo """
 
-dispatchTable["gc"] = proc(flakePath: string, args: seq[string]): int =
-  var all, sys = false
-  for kind, key, val in getopt(args):
-    case kind
-    of cmdLongOption, cmdShortOption:
-      case key
-      of "a", "all": all = true
-      of "s", "system": sys = true
-      of "h", "help":
-        echo "Usage: dotfiles gc [options]"
-        echo ""
-        echo "  -a, --all     Clean up all profiles"
-        echo "  -s, --system  Clean up the system profile"
-        return 0
-    of cmdArgument:
-      continue
-    of cmdEnd:
-      assert(false)
-  if all or sys:
-    echo "Cleaning up your system profile"
-    discard execShellCmd "sudo nix-collect-garbage -d"
-    discard execShellCmd "sudo nix-store --optimise"
-    discard execShellCmd "sudo nix-env --delete-generations old --profile /nix/var/nix/profiles/system"
-    discard execShellCmd "sudo /nix/var/nix/profiles/system/bin/s,witch-to-configuration switch"
-  if all or not sys:
-    discard execShellCmd "nix-collect-garbage -d"
-  return 0
+    Options:
+        -d, --dryrun                     Don't change anything; perform dry run
+        -D, --debug                      Show trace on nix errors
+        -f, --flake URI                  Change target flake to URI
+        -h, --help                       Display this help, or help for a specific command
+        -i, -A, -q, -e, -p               Forward to nix-env
 
-dispatchTable["repl"] = proc(flakePath: string, args: seq[string]): int =
-  let (tmpfile, path) = createTempFile("dotfiles-repl.nix", "_end.tmp")
-  tmpfile.write("import " & flakePath & "(builtins.getFlake \"" & flakePath & "\")")
-  execShellCmd "nix repl \\<nixpkgs\\> " & path
+    """
 
-dispatchTable["search"] = proc(flakePath: string, args: seq[string]): int =
-  execShellCmd "nix search nixpkgs " & args.join(" ")
+dispatchTable["build"] = makeCommand(
+  help = "Run build with full logs", args = "<TARGET|.>"):
+  proc(flakePath: string, args: seq[string]): int =
+    var argstr = args.join(" ")
+    if argstr == "": argstr = "."
+    return execShellCmd &"nix build -L {argstr}"
 
-dispatchTable["update"] = proc(flakePath: string, args: seq[string]): int =
 
-  if args.len == 0:
-    let res = execShellCmd "nix flake update " & flakePath & " " & args[0]
-    return res
-  else:
-    return execShellCmd "nix flake lock " & flakePath &
-      join(map(args, proc(arg: string): string = fmt" --update-input {arg}"), " ")
+dispatchTable["check"] = makeCommand(
+  help = "Run 'nix flake check' on your flake",
+  args = ""):
+  proc(flakePath: string, args: seq[string]): int =
+    let res = execShellCmd "nix flake check " & flakePath
+    return(res)
 
-dispatchTable["rebuild"] = proc(flakePath: string, args: seq[string]): int =
-  if hostOs == "macosx":
-    return execShellCmd "darwin-rebuild switch --flake " & flakePath
-  execShellCmd "sudo nixos-rebuild switch --flake " & flakePath
+dispatchTable["gc"] = makeCommand(
+    help = "Garbage collect & optimize nix store",
+    args = "[-a] [-s]"):
+  proc(flakePath: string, args: seq[string]): int =
+    var all, sys = false
+    for kind, key, val in getopt(args):
+      case kind
+      of cmdLongOption, cmdShortOption:
+        case key
+        of "a", "all": all = true
+        of "s", "system": sys = true
+        of "h", "help":
+          echo "Usage: dotfiles gc [options]"
+          echo ""
+          echo "  -a, --all     Clean up all profiles"
+          echo "  -s, --system  Clean up the system profile"
+          return 0
+      of cmdArgument:
+        continue
+      of cmdEnd:
+        assert(false)
+    if all or sys:
+      echo "Cleaning up your system profile"
+      discard execShellCmd "sudo nix-collect-garbage -d"
+      discard execShellCmd "sudo nix-store --optimise"
+      discard execShellCmd "sudo nix-env --delete-generations old --profile /nix/var/nix/profiles/system"
+      discard execShellCmd "sudo /nix/var/nix/profiles/system/bin/s,witch-to-configuration switch"
+    if all or not sys:
+      discard execShellCmd "nix-collect-garbage -d"
+    return 0
 
-dispatchTable["swap"] = proc(flakePath: string, args: seq[string]): int =
-  for target in args:
-    if target.dirExists:
-      var foundBackups: seq[string] = @[]
-      echo fmt"Checking {target}"
-      for path in walkDirRec(target, checkDir = true, yieldFilter = {pcLinkToFile}):
-        if path.contains(re".nix-store-backup$"):
-          foundBackups.add(path.replace(backupSuffix, ""))
-      if foundBackups.len > 0:
-        echo "Backups found, swapping back"
-        discard dispatchTable["swap"](flakePath, foundBackups)
-      else:
-        var targets: seq[string] = @[]
+dispatchTable["rebuild"] = makeCommand(
+  help = "Rebuild the current system's flake",
+  args = ""):
+  proc(flakePath: string, args: seq[string]): int =
+    if hostOs == "macosx":
+      return execShellCmd "darwin-rebuild switch --flake " & flakePath
+    execShellCmd "sudo nixos-rebuild switch --flake " & flakePath
+
+dispatchTable["repl"] = makeCommand(
+  help = "Open a nix-repl with nixpkgs and dotfiles preloaded",
+  args = ""):
+  proc(flakePath: string, args: seq[string]): int =
+    let (tmpfile, path) = createTempFile("dotfiles-repl.nix", "_end.tmp")
+    tmpfile.write("import " & flakePath & "(builtins.getFlake \"" & flakePath & "\")")
+    execShellCmd "nix repl \\<nixpkgs\\> " & path
+
+dispatchTable["search"] = makeCommand(
+  help = "Search nixpkgs for a package",
+  args = "[package]"):
+  proc(flakePath: string, args: seq[string]): int =
+    execShellCmd "nix search nixpkgs " & args.join(" ")
+
+dispatchTable["show"] = makeCommand(
+  help = "Show your flake",
+  args = "[ARGS...]"):
+  proc(flakePath: string, args: seq[string]): int =
+    execShellCmd "nix flake show " & flakePath
+
+dispatchTable["ssh"] = makeCommand(
+  help = "Run a hei command on a remote NixOS system",
+  args = "HOST [COMMAND]"):
+  proc(flakePath: string, args: seq[string]): int =
+    execShellCmd "ssh " & args[0] & " hei " & args[1..args.high].join(" ")
+
+dispatchTable["swap"] = makeCommand(
+  help = "Recursively swap nix-store symlinks with copies (or back)",
+  args = "PATH [PATH...]"):
+  proc(flakePath: string, args: seq[string]): int =
+    for target in args:
+      if target.dirExists:
+        var foundBackups: seq[string] = @[]
+        echo fmt"Checking {target}"
         for path in walkDirRec(target, checkDir = true, yieldFilter = {pcLinkToFile}):
-          targets.add(path)
-        discard dispatchTable["swap"](flakePath, targets)
-    elif fmt"{target}{backupSuffix}".fileExists:
-      echo &"Unswapping {target}"
-      discard execShellCmd &"mv -i {target}{backupSuffix} {target}"
-    elif target.fileExists:
-      if target.symlinkExists and target.expandSymlink.contains(re"^/nix/"):
-        echo &"Swapping {target}"
-        discard execShellCmd &"mv {target} {target}{backupSuffix}"
-        discard execShellCmd &"cp {target}{backupSuffix} {target}"
+          if path.contains(re".nix-store-backup$"):
+            foundBackups.add(path.replace(backupSuffix, ""))
+        if foundBackups.len > 0:
+          echo "Backups found, swapping back"
+          discard dispatchTable["swap"].body(flakePath, foundBackups)
+        else:
+          var targets: seq[string] = @[]
+          for path in walkDirRec(target, checkDir = true, yieldFilter = {pcLinkToFile}):
+            targets.add(path)
+          discard dispatchTable["swap"].body(flakePath, targets)
+      elif fmt"{target}{backupSuffix}".fileExists:
+        echo &"Unswapping {target}"
+        discard execShellCmd &"mv -i {target}{backupSuffix} {target}"
+      elif target.fileExists:
+        if target.symlinkExists and target.expandSymlink.contains(re"^/nix/"):
+          echo &"Swapping {target}"
+          discard execShellCmd &"mv {target} {target}{backupSuffix}"
+          discard execShellCmd &"cp {target}{backupSuffix} {target}"
+        else:
+          echo &"Not swapping {target} because it is not in the nix store"
       else:
-        echo &"Not swapping {target} because it is not in the nix store"
+        echo &"No such file or directory: {target}"
+        return 1
+
+dispatchTable["test"] = makeCommand(
+  help = "Quickly rebuild, for quick iteration",
+  args = ""):
+  proc(flakePath: string, args: seq[string]): int =
+    dispatchTable["rebuild"].body(flakePath, @["--fast"])
+
+dispatchTable["upgrade"] = makeCommand(
+  help = "Update all flakes and rebuild system",
+  args = ""):
+  proc(flakePath: string, args: seq[string]): int =
+    if execShellCmd("nix flake update " & flakePath) == 0:
+      return dispatchTable["rebuild"].body(flakePath, args)
+    echo "Update failed, not rebuilding."
+    return 1
+
+dispatchTable["update"] = makeCommand(
+  help = "Update specific flakes or all of them",
+  args = "[ INPUT...]"):
+  proc(flakePath: string, args: seq[string]): int =
+    if args.len == 0:
+      return execShellCmd "nix flake update " & flakePath
     else:
-      echo &"No such file or directory: {target}"
-      return 1
-
-dispatchTable["ssh"] = proc(flakePath: string, args: seq[string]): int =
-  execShellCmd "ssh " & args[0] & " hei " & args[1..args.high].join(" ")
-
-dispatchTable["test"] = proc(flakePath: string, args: seq[string]): int =
-  dispatchTable["rebuild"](flakePath, @["--fast"])
-
-dispatchTable["upgrade"] = proc(flakePath: string, args: seq[string]): int =
-  discard execShellCmd "nix flake update " & flakePath
-  dispatchTable["rebuild"](flakePath, args)
+      return execShellCmd "nix flake lock " & flakePath &
+        join(map(args, proc(arg: string): string = fmt" --update-input {arg}"), " ")
 
 proc dispatchCommand*(cmd: string, flakePath: string, args: seq[string]) =
   if dispatchTable.hasKey(cmd):
-    quit(dispatchTable[cmd](flakePath, args))
+    quit(dispatchTable[cmd].body(flakePath, args))
   echo(&"\n  Unknown command: {cmd}\n")
-  system.quit dispatchTable["help"](flakePath, @[])
+  system.quit dispatchTable["help"].body(flakePath, @[])
