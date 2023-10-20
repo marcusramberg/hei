@@ -88,7 +88,11 @@ makeCommand("completions",
         echo "complete -c hei -f"
         for cmd in dispatchTable.keys:
           echo &"complete -c hei -n \"not __fish_seen_subcommand_from {commands}\" -a \"{cmd}\" -d \"{dispatchTable[cmd].description}\""
-        echo &"complete -c hei -n \"not __fish_seen_subcommand_from {commands}\" -a \"{commands}\""
+        echo &"complete -c hei -s d -l dryrun -d \"Don't change anything; perform dry run\""
+        echo &"complete -c hei -s D -l debug -d \"Show trace on nix errors\""
+        echo &"complete -c hei -s f -l flake -d \"Change target flake to URI\""
+        echo &"complete -c hei -s h -l help -d \"Display this help, or help for a specific command\""
+        echo &"complete -c hei -s i -s A -s q -s e -s p -d \"Forward to nix-env\""
       of "zsh":
         echo "compctl -k '(hei help | awk \"{print $2}\")' hei"
       of "bash":
