@@ -12,19 +12,21 @@ import std/[
 type CommandProc = proc (flakePath: string, args: seq[string]): int
 
 type Command = object
-  description: string = ""
-  arg: string = ""
+  description: string
+  arg: string
   body: CommandProc
 
 let backupSuffix = ".nix-store-backup"
 
-template makeCommand(help: string, args: string, command: untyped): Command =
-  let cmd: CommandProc = command
-  Command(description: help, arg: args, body: cmd)
-
 var dispatchTable = initOrderedTable[string, Command]()
 
-dispatchTable["help"] = makeCommand(
+template makeCommand(name: string, help: string, args: string,
+    command: untyped) =
+  let cmd: CommandProc = command
+  dispatchTable[name] = Command(description: help, arg: args, body: cmd)
+
+
+makeCommand("help",
   help = "Call help with a command to get more info",
   args = "[SUBCOMMAND]"):
   proc(flakePath: string, args: seq[string]): int =
@@ -58,24 +60,24 @@ dispatchTable["help"] = makeCommand(
 
     """
 
-dispatchTable["build"] = makeCommand(
-  help = "Run build with full logs", args = "<TARGET|.>"):
+makeCommand("build",
+  help = "Run build with full logs",
+  args = "<TARGET|.>"):
   proc(flakePath: string, args: seq[string]): int =
     var argstr = args.join(" ")
     if argstr == "": argstr = "."
-    return execShellCmd &"nix build -L {argstr}"
+    execShellCmd &"nix build -L {argstr}"
 
 
-dispatchTable["check"] = makeCommand(
+makeCommand("check",
   help = "Run 'nix flake check' on your flake",
   args = ""):
   proc(flakePath: string, args: seq[string]): int =
-    let res = execShellCmd "nix flake check " & flakePath
-    return(res)
+    execShellCmd "nix flake check " & flakePath
 
-dispatchTable["gc"] = makeCommand(
-    help = "Garbage collect & optimize nix store",
-    args = "[-a] [-s]"):
+makeCommand("gc",
+  help = "Garbage collect & optimize nix store",
+  args = "[-a] [-s]"):
   proc(flakePath: string, args: seq[string]): int =
     var all, sys = false
     for kind, key, val in getopt(args):
@@ -104,7 +106,7 @@ dispatchTable["gc"] = makeCommand(
       discard execShellCmd "nix-collect-garbage -d"
     return 0
 
-dispatchTable["rebuild"] = makeCommand(
+makeCommand("rebuild",
   help = "Rebuild the current system's flake",
   args = ""):
   proc(flakePath: string, args: seq[string]): int =
@@ -112,7 +114,7 @@ dispatchTable["rebuild"] = makeCommand(
       return execShellCmd "darwin-rebuild switch --flake " & flakePath
     execShellCmd "sudo nixos-rebuild switch --flake " & flakePath
 
-dispatchTable["repl"] = makeCommand(
+makeCommand("repl",
   help = "Open a nix-repl with nixpkgs and dotfiles preloaded",
   args = ""):
   proc(flakePath: string, args: seq[string]): int =
@@ -120,25 +122,25 @@ dispatchTable["repl"] = makeCommand(
     tmpfile.write("import " & flakePath & "(builtins.getFlake \"" & flakePath & "\")")
     execShellCmd "nix repl \\<nixpkgs\\> " & path
 
-dispatchTable["search"] = makeCommand(
+makeCommand("search",
   help = "Search nixpkgs for a package",
   args = "[package]"):
   proc(flakePath: string, args: seq[string]): int =
     execShellCmd "nix search nixpkgs " & args.join(" ")
 
-dispatchTable["show"] = makeCommand(
+makeCommand("show",
   help = "Show your flake",
   args = "[ARGS...]"):
   proc(flakePath: string, args: seq[string]): int =
     execShellCmd "nix flake show " & flakePath
 
-dispatchTable["ssh"] = makeCommand(
+makeCommand("ssh",
   help = "Run a hei command on a remote NixOS system",
   args = "HOST [COMMAND]"):
   proc(flakePath: string, args: seq[string]): int =
     execShellCmd "ssh " & args[0] & " hei " & args[1..args.high].join(" ")
 
-dispatchTable["swap"] = makeCommand(
+makeCommand("swap",
   help = "Recursively swap nix-store symlinks with copies (or back)",
   args = "PATH [PATH...]"):
   proc(flakePath: string, args: seq[string]): int =
@@ -170,31 +172,31 @@ dispatchTable["swap"] = makeCommand(
       else:
         echo &"No such file or directory: {target}"
         return 1
+    0
 
-dispatchTable["test"] = makeCommand(
+makeCommand("test",
   help = "Quickly rebuild, for quick iteration",
   args = ""):
   proc(flakePath: string, args: seq[string]): int =
     dispatchTable["rebuild"].body(flakePath, @["--fast"])
 
-dispatchTable["upgrade"] = makeCommand(
+makeCommand("upgrade",
   help = "Update all flakes and rebuild system",
   args = ""):
   proc(flakePath: string, args: seq[string]): int =
     if execShellCmd("nix flake update " & flakePath) == 0:
       return dispatchTable["rebuild"].body(flakePath, args)
     echo "Update failed, not rebuilding."
-    return 1
+    1
 
-dispatchTable["update"] = makeCommand(
+makeCommand("update",
   help = "Update specific flakes or all of them",
   args = "[ INPUT...]"):
   proc(flakePath: string, args: seq[string]): int =
     if args.len == 0:
       return execShellCmd "nix flake update " & flakePath
-    else:
-      return execShellCmd "nix flake lock " & flakePath &
-        join(map(args, proc(arg: string): string = fmt" --update-input {arg}"), " ")
+    return execShellCmd "nix flake lock " & flakePath &
+      join(map(args, proc(arg: string): string = fmt" --update-input {arg}"), " ")
 
 proc dispatchCommand*(cmd: string, flakePath: string, args: seq[string]) =
   if dispatchTable.hasKey(cmd):
