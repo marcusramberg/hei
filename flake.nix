@@ -20,11 +20,20 @@
             (writeScriptBin "git" ''
               echo ${ self.ref or "dirty" }
             '')
+            installShellFiles
           ];
           buildinputs = with pkgs; [
             nim
             nix-output-monitor
           ];
+          postInstall = ''
+            export NIX_SYSTEM_FLAKE="."
+            installShellCompletion --cmd hei \
+              --bash <($out/bin/hei completions bash) \
+              --fish <($out/bin/hei completions fish) \
+              --zsh <($out/bin/hei completions zsh)
+          '';
+
         };
         devShells.default = pkgs.mkShell {
           buildInputs = with pkgs; [

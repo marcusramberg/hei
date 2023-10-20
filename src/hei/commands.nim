@@ -75,6 +75,28 @@ makeCommand("check",
   proc(flakePath: string, args: seq[string]): int =
     execShellCmd "nix flake check " & flakePath
 
+makeCommand("completions",
+  help = "Generate shell completions for hei",
+  args = "[zsh|bash|fish]"):
+  proc(flakePath: string, args: seq[string]): int =
+    if args.len == 0:
+      echo "Usage: hei completion [zsh|bash|fish]"
+      return 1
+    case args[0]
+      of "fish":
+        let commands = dispatchTable.keys.toSeq.join(" ")
+        echo "complete -c hei -f"
+        for cmd in dispatchTable.keys:
+          echo &"complete -c hei -n \"not __fish_seen_subcommand_from {commands}\" -a \"{cmd}\" -d \"{dispatchTable[cmd].description}\""
+        echo &"complete -c hei -n \"not __fish_seen_subcommand_from {commands}\" -a \"{commands}\""
+      of "zsh":
+        echo "compctl -k '(hei help | awk \"{print $2}\")' hei"
+      of "bash":
+        echo "complete -W \"$(hei help | awk '{print $2}')\" hei"
+      else:
+        echo "Unknown shell: {args[0]}"
+        return 1
+
 makeCommand("gc",
   help = "Garbage collect & optimize nix store",
   args = "[-a] [-s]"):
