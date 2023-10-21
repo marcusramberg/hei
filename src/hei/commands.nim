@@ -25,7 +25,6 @@ template makeCommand(name: string, help: string, args: string,
   let cmd: CommandProc = command
   dispatchTable[name] = Command(description: help, arg: args, body: cmd)
 
-
 makeCommand("help",
   help = "Call help with a command to get more info",
   args = "[SUBCOMMAND]"):
@@ -88,6 +87,7 @@ makeCommand("completions",
         echo "complete -c hei -f"
         for cmd in dispatchTable.keys:
           echo &"complete -c hei -n \"not __fish_seen_subcommand_from {commands}\" -a \"{cmd}\" -d \"{dispatchTable[cmd].description}\""
+        # FIXME: Generate these from code
         echo &"complete -c hei -s d -l dryrun -d \"Don't change anything; perform dry run\""
         echo &"complete -c hei -s D -l debug -d \"Show trace on nix errors\""
         echo &"complete -c hei -s f -l flake -d \"Change target flake to URI\""
@@ -136,9 +136,10 @@ makeCommand("rebuild",
   help = "Rebuild the current system's flake",
   args = ""):
   proc(flakePath: string, args: seq[string]): int =
-    if hostOs == "macosx":
-      return execShellCmd "darwin-rebuild switch --flake " & flakePath
-    execShellCmd "sudo nixos-rebuild switch --flake " & flakePath
+    let rebuildCommand = if hostOs == "macosx": "darwin-rebuild" else: "sudo nixos-rebuild"
+    if args.len == 0:
+      return execShellCmd &"{rebuildCommand} switch --flake {flakePath}"
+    execShellCmd &"""{rebuildCommand} {args.join(" ")} --flake {flakePath}"""
 
 makeCommand("repl",
   help = "Open a nix-repl with nixpkgs and dotfiles preloaded",
@@ -147,6 +148,12 @@ makeCommand("repl",
     let (tmpfile, path) = createTempFile("dotfiles-repl.nix", "_end.tmp")
     tmpfile.write("import " & flakePath & "(builtins.getFlake \"" & flakePath & "\")")
     execShellCmd "nix repl \\<nixpkgs\\> " & path
+
+makeCommand("rollback",
+  help = "Roll back to previous generation",
+  args = ""):
+  proc(flakePath: string, args: seq[string]): int =
+    dispatchTable["rebuild"].body(flakePath, @["--rollback", "switch"])
 
 makeCommand("search",
   help = "Search nixpkgs for a package",
@@ -204,7 +211,7 @@ makeCommand("test",
   help = "Quickly rebuild, for quick iteration",
   args = ""):
   proc(flakePath: string, args: seq[string]): int =
-    dispatchTable["rebuild"].body(flakePath, @["--fast"])
+    dispatchTable["rebuild"].body(flakePath, @["--fast", "switch"])
 
 makeCommand("upgrade",
   help = "Update all flakes and rebuild system",
