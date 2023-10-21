@@ -35,14 +35,13 @@ makeCommand("help",
     echo """
     usage:  hei [global-options] [command] [sub-options]
 
-    Welcome to a simpler nix experience (inspired by hey by hlissner)
+    A simpler nix experience (inspired by hey by hlissner)
 
     Note: `hei` can also be used as a shortcut for nix-env:
 
       hei -q
       hei -iA nixos.htop
       hei -e htop
-
 
     Available commands: """
 
@@ -63,10 +62,11 @@ makeCommand("build",
   help = "Run build with full logs",
   args = "<TARGET|.>"):
   proc(flakePath: string, args: seq[string]): int =
+    var buildCommand = "nix"
+    if execShellCmd("which nom") == 0: buildCommand = "nom"
     var argstr = args.join(" ")
     if argstr == "": argstr = "."
-    execShellCmd &"nix build -L {argstr}"
-
+    execShellCmd &"{buildCommand} build -L {argstr}"
 
 makeCommand("check",
   help = "Run 'nix flake check' on your flake",
@@ -84,15 +84,16 @@ makeCommand("completions",
     case args[0]
       of "fish":
         let commands = dispatchTable.keys.toSeq.join(" ")
+        let isRoot = &" -n \"not __fish_seen_subcommand_from {commands}\""
         echo "complete -c hei -f"
         for cmd in dispatchTable.keys:
-          echo &"complete -c hei -n \"not __fish_seen_subcommand_from {commands}\" -a \"{cmd}\" -d \"{dispatchTable[cmd].description}\""
+          echo &"complete -c hei {isRoot} -a \"{cmd}\" -d \"{dispatchTable[cmd].description}\""
         # FIXME: Generate these from code
-        echo &"complete -c hei -s d -l dryrun -d \"Don't change anything; perform dry run\""
-        echo &"complete -c hei -s D -l debug -d \"Show trace on nix errors\""
-        echo &"complete -c hei -s f -l flake -d \"Change target flake to URI\""
-        echo &"complete -c hei -s h -l help -d \"Display this help, or help for a specific command\""
-        echo &"complete -c hei -s i -s A -s q -s e -s p -d \"Forward to nix-env\""
+        echo &"complete -c hei {isRoot} -s d -l dryrun -d \"Don't change anything; perform dry run\""
+        echo &"complete -c hei {isRoot} -s D -l debug -d \"Show trace on nix errors\""
+        echo &"complete -c hei {isRoot} -s f -l flake -d \"Change target flake to URI\""
+        echo &"complete -c hei {isRoot} -s h -l help -d \"Display this help, or help for a specific command\""
+        echo &"complete -c hei {isRoot} -s i -s A -s q -s e -s p -d \"Forward to nix-env\""
       of "zsh":
         echo "compctl -k '(hei help | awk \"{print $2}\")' hei"
       of "bash":
