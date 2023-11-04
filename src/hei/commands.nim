@@ -102,6 +102,34 @@ makeCommand("completions",
         echo "Unknown shell: {args[0]}"
         return 1
 
+makeCommand("gen",
+  help = "Work with generations",
+  args = "list|diff|show|switch"):
+  proc(flakePath: string, args: seq[string]): int =
+    for kind, key, val in getopt(args):
+      case kind
+      of cmdArgument:
+        case key
+        of "list":
+          return execShellCmd "sudo nix-env --list-generations --profile /nix/var/nix/profiles/system"
+        of "delete":
+          return execShellCmd "sudo nix-env --delete-generations --profile /nix/var/nix/profiles/system " & val
+        of "diff":
+          echo "diff"
+          return 1
+        of "help": break
+      of cmdLongOption, cmdShortOption:
+        case key
+        of "h", "help": break
+      of cmdEnd:
+        assert(false)
+    echo "Usage: dotfiles gen <command>"
+    echo ""
+    echo "  list    List generations"
+    echo "  delete  Delete a generation"
+    echo "  diff    Diff two generations"
+    return 0
+
 makeCommand("gc",
   help = "Garbage collect & optimize nix store",
   args = "[-a] [-s]"):

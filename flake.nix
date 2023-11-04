@@ -27,6 +27,7 @@
             nix-output-monitor
           ];
           postInstall = ''
+            # Minor hack to ensure we can call hei while buiding
             export NIX_SYSTEM_FLAKE="."
             installShellCompletion --cmd hei \
               --bash <($out/bin/hei completions bash) \
