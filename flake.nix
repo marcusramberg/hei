@@ -11,10 +11,9 @@
         pkgs = nixpkgs.legacyPackages.${system}.pkgs;
       in
       {
-        packages.default = pkgs.nim2Packages.buildNimPackage {
+        packages.default = pkgs.buildNimPackage {
           name = "hei";
           version = 0.1;
-          nimBinOnly = true;
           src = ./.;
           nativeBuildInputs = with pkgs; [
             (writeScriptBin "git" ''
@@ -40,7 +39,6 @@
           buildInputs = with pkgs; [
             nim
             nimlsp
-            nim2Packages.safeseq
             nix-output-monitor
           ];
         };
