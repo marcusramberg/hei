@@ -6,7 +6,6 @@ import std/[
   strformat,
   strutils,
   tables,
-  tempfiles
 ]
 
 type CommandProc = proc (flakePath: string, args: seq[string]): int
@@ -171,12 +170,10 @@ makeCommand("rebuild",
     execShellCmd &"""{rebuildCommand} {args.join(" ")} --flake {flakePath}"""
 
 makeCommand("repl",
-  help = "Open a nix-repl with nixpkgs and dotfiles preloaded",
+  help = "Open a nix-repl with our systme flake preloaded",
   args = ""):
   proc(flakePath: string, args: seq[string]): int =
-    let (tmpfile, path) = createTempFile("dotfiles-repl.nix", "_end.tmp")
-    tmpfile.write("import " & flakePath & "(builtins.getFlake \"" & flakePath & "\")")
-    execShellCmd "nix repl \\<nixpkgs\\> " & path
+    execShellCmd "nix repl --file " & flakePath & "/flake.nix"
 
 makeCommand("rollback",
   help = "Roll back to previous generation",
