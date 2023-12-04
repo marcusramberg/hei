@@ -141,10 +141,10 @@ makeCommand("gc",
         of "a", "all": all = true
         of "s", "system": sys = true
         of "h", "help":
-          echo "Usage: dotfiles gc [options]"
-          echo ""
-          echo "  -a, --all     Clean up all profiles"
-          echo "  -s, --system  Clean up the system profile"
+          echo """Usage: dotfiles gc [options]
+                   -a, --all     Clean up all profiles"
+                   -s, --system  Clean up the system profile
+"""
           return 0
       of cmdArgument:
         continue
@@ -162,15 +162,35 @@ makeCommand("gc",
 
 makeCommand("rebuild",
   help = "Rebuild the current system's flake",
-  args = ""):
+  args = "[-o|--offline] [-r|--rollback] [-f|--fast] [switch|boot]"):
   proc(flakePath: string, args: seq[string]): int =
+    var
+      options = &"--flake {flakePath}"
+      argument = "switch"
+    for kind, key, val in getopt(args):
+      case kind
+      of cmdLongOption, cmdShortOption:
+        case key
+        of "o", "offline": options&=" --option subtitute false"
+        of "r", "rollback": options&=" --rollback"
+        of "f", "fast": options&=" --fast"
+        of "h", "help":
+          echo """Usage: rebuild [options]
+                    [-o|--offline]
+                    [-r|--rollback]
+                    [-f|--fast] [switch|boot]
+"""
+          return 0
+        else: options&=" --{key}"
+      of cmdArgument:
+        argument = val
+      of cmdEnd:
+        assert(false)
     let rebuildCommand = if hostOs == "macosx": "darwin-rebuild" else: "sudo nixos-rebuild"
-    if args.len == 0:
-      return execShellCmd &"{rebuildCommand} switch --flake {flakePath}"
-    execShellCmd &"""{rebuildCommand} {args.join(" ")} --flake {flakePath}"""
+    execShellCmd &"{rebuildCommand} {argument} {options}"
 
 makeCommand("repl",
-  help = "Open a nix-repl with our systme flake preloaded",
+  help = "Open a nix-repl with our system flake preloaded",
   args = ""):
   proc(flakePath: string, args: seq[string]): int =
     execShellCmd "nix repl --file " & flakePath & "/flake.nix"
@@ -179,7 +199,7 @@ makeCommand("rollback",
   help = "Roll back to previous generation",
   args = ""):
   proc(flakePath: string, args: seq[string]): int =
-    dispatchTable["rebuild"].body(flakePath, @["--rollback", "switch"])
+    dispatchTable["rebuild"].body(flakePath, @["--rollback"])
 
 makeCommand("search",
   help = "Search nixpkgs for a package",
@@ -237,7 +257,7 @@ makeCommand("test",
   help = "Quickly rebuild, for quick iteration",
   args = ""):
   proc(flakePath: string, args: seq[string]): int =
-    dispatchTable["rebuild"].body(flakePath, @["--fast", "switch"])
+    dispatchTable["rebuild"].body(flakePath, @["--fast"])
 
 makeCommand("upgrade",
   help = "Update all flakes and rebuild system",
