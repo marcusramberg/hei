@@ -183,7 +183,7 @@ makeCommand("rebuild",
           return 0
         else: options&=" --{key}"
       of cmdArgument:
-        argument = val
+        if val != "": argument = val
       of cmdEnd:
         assert(false)
     let rebuildCommand = if hostOs == "macosx": "darwin-rebuild" else: "sudo nixos-rebuild"
