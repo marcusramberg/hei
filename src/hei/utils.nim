@@ -1,4 +1,4 @@
-# Take a list of folders, expand tild and return the first that has a flake.nix
+# Take a list of folders, expand tilde and return the first that has a flake.nix
 import os
 import strutils
 

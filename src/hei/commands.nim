@@ -49,7 +49,7 @@ makeCommand("help",
     echo """
 
     Options:
-        -d, --dryrun                     Don't change anything; perform dry run
+        -d, --dry-run                     Don't change anything; perform dry run
         -D, --debug                      Show trace on nix errors
         -f, --flake URI                  Change target flake to URI
         -h, --help                       Display this help, or help for a specific command
@@ -63,9 +63,9 @@ makeCommand("build",
   proc(flakePath: string, args: seq[string]): int =
     var buildCommand = "nix"
     if execShellCmd("which nom") == 0: buildCommand = "nom"
-    var argstr = args.join(" ")
-    if argstr == "": argstr = "."
-    execShellCmd &"{buildCommand} build -L {argstr}"
+    var argStr = args.join(" ")
+    if argStr == "": argStr = "."
+    execShellCmd &"{buildCommand} build -L {argStr}"
 
 makeCommand("check",
   help = "Run 'nix flake check' on your flake",
@@ -88,7 +88,7 @@ makeCommand("completions",
         for cmd in dispatchTable.keys:
           echo &"complete -c hei {isRoot} -a \"{cmd}\" -d \"{dispatchTable[cmd].description}\""
         # FIXME: Generate these from code
-        echo &"complete -c hei {isRoot} -s d -l dryrun -d \"Don't change anything; perform dry run\""
+        echo &"complete -c hei {isRoot} -s d -l dry-run -d \"Don't change anything; perform dry run\""
         echo &"complete -c hei {isRoot} -s D -l debug -d \"Show trace on nix errors\""
         echo &"complete -c hei {isRoot} -s f -l flake -d \"Change target flake to URI\""
         echo &"complete -c hei {isRoot} -s h -l help -d \"Display this help, or help for a specific command\""
@@ -105,7 +105,7 @@ makeCommand("gen",
   help = "Work with generations",
   args = "list|diff|show|switch"):
   proc(flakePath: string, args: seq[string]): int =
-    for kind, key, val in getopt(args):
+    for kind, key, val in getOpt(args):
       case kind
       of cmdArgument:
         case key
@@ -134,7 +134,7 @@ makeCommand("gc",
   args = "[-a] [-s]"):
   proc(flakePath: string, args: seq[string]): int =
     var all, sys = false
-    for kind, key, val in getopt(args):
+    for kind, key, val in getOpt(args):
       case kind
       of cmdLongOption, cmdShortOption:
         case key

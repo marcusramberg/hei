@@ -20,33 +20,32 @@ when isMainModule:
   while true:
     p.next()
     case p.kind
-      of cmdend: break
-      of cmdshortoption, cmdlongoption:
+      of cmdEnd: break
+      of cmdShortOption, cmdLongOption:
         case p.key
         of "f", "flake":
           flakePath = p.val
-        of "d", "dryrun":
+        of "d", "dry-run":
           putEnv("NIX_DEBUG", "1")
         of "D", "debug":
           putEnv("NIX_DEBUG", "1")
           putEnv("NIX_SHOW_TRACE", "1")
         of "v", "version":
-          echo fmt"hei {version} - running on {hostos}({hostcpu})"
+          echo fmt"hei {version} - running on {hostOs}({hostCpu})"
           quit()
         of "h", "help":
           break
         of "i", "a", "q", "e", "p":
           # run nix-env with the original command line arguments
           echo "forwarding to nix-env ..."
-          let res = execshellcmd "nix-env " & commandlineparams().join(" ")
+          let res = execShellCmd "nix-env " & commandLineParams().join(" ")
           system.quit(res)
         else:
           echo "Unknown option: ", p.key, ". run `hei` for help."
           quit()
-      of cmdargument:
-        dispatchcommand(p.key, flakePath, p.remainingArgs)
+      of cmdArgument:
+        dispatchCommand(p.key, flakePath, p.remainingArgs)
         quit()
 
-  echo "WOOT"
   echo "Error: No command specified."
-  dispatchcommand("help", flakePath, @[])
+  dispatchCommand("help", flakePath, @[])
