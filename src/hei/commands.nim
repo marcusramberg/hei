@@ -122,11 +122,11 @@ makeCommand("gen",
         of "h", "help": break
       of cmdEnd:
         assert(false)
-    echo "Usage: dotfiles gen <command>"
-    echo ""
-    echo "  list    List generations"
-    echo "  delete  Delete a generation"
-    echo "  diff    Diff two generations"
+    echo """Usage: dotfiles gen <command>
+
+  list    List generations
+  delete  Delete a generation
+  diff    Diff two generations"""
     return 0
 
 makeCommand("gc",
@@ -142,8 +142,8 @@ makeCommand("gc",
         of "s", "system": sys = true
         of "h", "help":
           echo """Usage: dotfiles gc [options]
-                   -a, --all     Clean up all profiles"
-                   -s, --system  Clean up the system profile
+  -a, --all     Clean up all profiles"
+  -s, --system  Clean up the system profile
 """
           return 0
       of cmdArgument:
@@ -167,25 +167,28 @@ makeCommand("rebuild",
     var
       options = &"--flake {flakePath}"
       argument = "switch"
-    for kind, key, val in getopt(args):
-      case kind
-      of cmdLongOption, cmdShortOption:
-        case key
-        of "o", "offline": options&=" --option subtitute false"
-        of "r", "rollback": options&=" --rollback"
-        of "f", "fast": options&=" --fast"
-        of "h", "help":
-          echo """Usage: rebuild [options]
-                    [-o|--offline]
-                    [-r|--rollback]
-                    [-f|--fast] [switch|boot]
-"""
-          return 0
-        else: options&=" --{key}"
-      of cmdArgument:
-        if val != "": argument = val
-      of cmdEnd:
-        assert(false)
+    if args.len > 0:
+      for kind, key, val in getOpt(args):
+        case kind
+        of cmdLongOption, cmdShortOption:
+          case key
+          of "o", "offline": options&=" --option substitute false"
+          of "r", "rollback": options&=" --rollback"
+          of "f", "fast": options&=" --fast"
+          of "h", "help":
+            echo """Usage: rebuild [options]
+    [-o|--offline]
+    [-r|--rollback]
+    [-f|--fast] [switch|boot]
+  """
+            return 0
+          else:
+            var sep = if kind == cmdShortOption: "-" else: "--"
+            options &= &" {sep}{key}"
+        of cmdArgument:
+          if val != "": argument = val
+        of cmdEnd:
+          assert(false)
     let rebuildCommand = if hostOs == "macosx": "darwin-rebuild" else: "sudo nixos-rebuild"
     execShellCmd &"{rebuildCommand} {argument} {options}"
 
@@ -263,8 +266,28 @@ makeCommand("upgrade",
   help = "Update all flakes and rebuild system",
   args = ""):
   proc(flakePath: string, args: seq[string]): int =
+    var rebuildArgs: seq[string] = @[]
+    for kind, key, val in getOpt(args):
+      case kind
+      of cmdLongOption, cmdShortOption:
+        case key
+        of "h", "help":
+          echo """Usage: dotfiles upgrade [options]
+  -p, --pull     Pull from git before updating
+  -h, --help     Display this help
+          """
+          return 0
+        of "p", "pull":
+          discard execShellCmd &"git -C {flakePath} pull --rebase"
+        else:
+          var sep = if kind == cmdShortOption: "-" else: "--"
+          rebuildArgs.add(&"{sep}{key}")
+      of cmdArgument:
+        rebuildArgs.add(val)
+      of cmdEnd:
+        assert(false)
     if execShellCmd("nix flake update " & flakePath) == 0:
-      return dispatchTable["rebuild"].body(flakePath, args)
+      return dispatchTable["rebuild"].body(flakePath, rebuildArgs)
     echo "Update failed, not rebuilding."
     1
 
