@@ -6,6 +6,7 @@ import std/[
   strformat,
   strutils,
   tables,
+  envvars
 ]
 
 type CommandProc = proc (flakePath: string, args: seq[string]): int
@@ -17,12 +18,19 @@ type Command = object
 
 let backupSuffix = ".nix-store-backup"
 
+
 var dispatchTable = initOrderedTable[string, Command]()
 
 template makeCommand(name: string, help: string, args: string,
     command: untyped) =
   let cmd: CommandProc = command
   dispatchTable[name] = Command(description: help, arg: args, body: cmd)
+
+proc exec(cmd: string): int =
+  if getEnv("HEI_TESTING") == "1":
+    return execShellCmd &"echo {cmd}"
+  echo &"Running: {cmd}"
+  return execShellCmd cmd
 
 makeCommand("help",
   help = "Call help with a command to get more info",
@@ -62,16 +70,16 @@ makeCommand("build",
   args = "<TARGET|.>"):
   proc(flakePath: string, args: seq[string]): int =
     var buildCommand = "nix"
-    if execShellCmd("which nom") == 0: buildCommand = "nom"
+    if exec("which nom") == 0: buildCommand = "nom"
     var argStr = args.join(" ")
     if argStr == "": argStr = "."
-    execShellCmd &"{buildCommand} build -L {argStr}"
+    exec &"{buildCommand} build -L {argStr}"
 
 makeCommand("check",
   help = "Run 'nix flake check' on your flake",
   args = ""):
   proc(flakePath: string, args: seq[string]): int =
-    execShellCmd "nix flake check " & flakePath
+    exec "nix flake check " & flakePath
 
 makeCommand("completions",
   help = "Generate shell completions for hei",
@@ -110,9 +118,9 @@ makeCommand("gen",
       of cmdArgument:
         case key
         of "list":
-          return execShellCmd "sudo nix-env --list-generations --profile /nix/var/nix/profiles/system"
+          return exec "sudo nix-env --list-generations --profile /nix/var/nix/profiles/system"
         of "delete":
-          return execShellCmd "sudo nix-env --delete-generations --profile /nix/var/nix/profiles/system " & val
+          return exec "sudo nix-env --delete-generations --profile /nix/var/nix/profiles/system " & val
         of "diff":
           echo "diff"
           return 1
@@ -152,12 +160,12 @@ makeCommand("gc",
         assert(false)
     if all or sys:
       echo "Cleaning up your system profile"
-      discard execShellCmd "sudo nix-collect-garbage -d"
-      discard execShellCmd "sudo nix-store --optimise"
-      discard execShellCmd "sudo nix-env --delete-generations old --profile /nix/var/nix/profiles/system"
-      discard execShellCmd "sudo /nix/var/nix/profiles/system/bin/s,witch-to-configuration switch"
+      discard exec "sudo nix-collect-garbage -d"
+      discard exec "sudo nix-store --optimise"
+      discard exec "sudo nix-env --delete-generations old --profile /nix/var/nix/profiles/system"
+      discard exec "sudo /nix/var/nix/profiles/system/bin/s,witch-to-configuration switch"
     if all or not sys:
-      discard execShellCmd "nix-collect-garbage -d"
+      discard exec "nix-collect-garbage -d"
     return 0
 
 makeCommand("rebuild",
@@ -190,13 +198,13 @@ makeCommand("rebuild",
         of cmdEnd:
           assert(false)
     let rebuildCommand = if hostOs == "macosx": "darwin-rebuild" else: "sudo nixos-rebuild"
-    execShellCmd &"{rebuildCommand} {argument} {options}"
+    exec &"{rebuildCommand} {argument} {options}"
 
 makeCommand("repl",
   help = "Open a nix-repl with our system flake preloaded",
   args = ""):
   proc(flakePath: string, args: seq[string]): int =
-    execShellCmd "nix repl --file " & flakePath & "/flake.nix"
+    exec "nix repl --file " & flakePath & "/flake.nix"
 
 makeCommand("rollback",
   help = "Roll back to previous generation",
@@ -208,19 +216,19 @@ makeCommand("search",
   help = "Search nixpkgs for a package",
   args = "[package]"):
   proc(flakePath: string, args: seq[string]): int =
-    execShellCmd "nix search nixpkgs " & args.join(" ")
+    exec "nix search nixpkgs " & args.join(" ")
 
 makeCommand("show",
   help = "Show your flake",
   args = "[ARGS...]"):
   proc(flakePath: string, args: seq[string]): int =
-    execShellCmd "nix flake show " & flakePath
+    exec "nix flake show " & flakePath
 
 makeCommand("ssh",
   help = "Run a hei command on a remote NixOS system",
   args = "HOST [COMMAND]"):
   proc(flakePath: string, args: seq[string]): int =
-    execShellCmd "ssh " & args[0] & " hei " & args[1..args.high].join(" ")
+    exec "ssh " & args[0] & " hei " & args[1..args.high].join(" ")
 
 makeCommand("swap",
   help = "Recursively swap nix-store symlinks with copies (or back)",
@@ -243,12 +251,12 @@ makeCommand("swap",
           discard dispatchTable["swap"].body(flakePath, targets)
       elif fmt"{target}{backupSuffix}".fileExists:
         echo &"Unswapping {target}"
-        discard execShellCmd &"mv -i {target}{backupSuffix} {target}"
+        discard exec &"mv -i {target}{backupSuffix} {target}"
       elif target.fileExists:
         if target.symlinkExists and target.expandSymlink.contains(re"^/nix/"):
           echo &"Swapping {target}"
-          discard execShellCmd &"mv {target} {target}{backupSuffix}"
-          discard execShellCmd &"cp {target}{backupSuffix} {target}"
+          discard exec &"mv {target} {target}{backupSuffix}"
+          discard exec &"cp {target}{backupSuffix} {target}"
         else:
           echo &"Not swapping {target} because it is not in the nix store"
       else:
@@ -278,7 +286,7 @@ makeCommand("upgrade",
           """
           return 0
         of "p", "pull":
-          discard execShellCmd &"git -C {flakePath} pull --rebase"
+          discard exec &"git -C {flakePath} pull --rebase"
         else:
           var sep = if kind == cmdShortOption: "-" else: "--"
           rebuildArgs.add(&"{sep}{key}")
@@ -286,7 +294,7 @@ makeCommand("upgrade",
         rebuildArgs.add(val)
       of cmdEnd:
         assert(false)
-    if execShellCmd("nix flake update " & flakePath) == 0:
+    if exec("nix flake update " & flakePath) == 0:
       return dispatchTable["rebuild"].body(flakePath, rebuildArgs)
     echo "Update failed, not rebuilding."
     1
@@ -296,8 +304,8 @@ makeCommand("update",
   args = "[ INPUT...]"):
   proc(flakePath: string, args: seq[string]): int =
     if args.len == 0:
-      return execShellCmd "nix flake update " & flakePath
-    return execShellCmd "nix flake lock " & flakePath &
+      return exec "nix flake update " & flakePath
+    return exec "nix flake lock " & flakePath &
       join(map(args, proc(arg: string): string = fmt" --update-input {arg}"), " ")
 
 proc dispatchCommand*(cmd: string, flakePath: string, args: seq[string]) =

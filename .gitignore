@@ -11,3 +11,13 @@ devenv.local.nix
 # pre-commit
 .pre-commit-config.yaml
 
+nimcache
+outputExpected.txt
+outputGotten.txt
+testresults
+tests/megatest
+tests/megatest.nim
+testresults.html
+tests/commands/test_gc
+tests/commands/test_rebuild
+tests/commands/test_build
