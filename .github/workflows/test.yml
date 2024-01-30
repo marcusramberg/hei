@@ -18,5 +18,5 @@ jobs:
       - uses: cachix/cachix-action@v13
         with:
           name: testament
-        - run: testament all
-          shell: sh
+      - run: testament all
+        shell: sh
