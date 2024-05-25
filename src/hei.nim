@@ -5,7 +5,7 @@ import hei/[commands, utils]
 
 const version = staticExec("git describe --tags HEAD")
 
-var flakePaths = @["/etc/nixos", "~/.config/nix-darwin"]
+var flakePaths = @["/etc/nixos", "~/.config/nix-darwin", "~/.config/nix-config"]
 if existsEnv("NIX_SYSTEM_FLAKE"):
   let envFlake = getEnv("NIX_SYSTEM_FLAKE")
   flakePaths.insert(@[envFlake])
