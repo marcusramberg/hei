@@ -120,7 +120,11 @@ makeCommand("gen",
         of "list":
           return exec "sudo nix-env --list-generations --profile /nix/var/nix/profiles/system"
         of "delete":
-          return exec "sudo nix-env --delete-generations --profile /nix/var/nix/profiles/system " & val
+          if args.len != 2:
+            echo "Usage: dotfiles gen delete <generation>"
+            return 1
+          return exec "sudo nix-env --delete-generations --profile /nix/var/nix/profiles/system " &
+              args[1]
         of "diff":
           echo "diff"
           return 1
