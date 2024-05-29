@@ -1,8 +1,8 @@
 # Package
 
-version = "0.0.1"
+version = "0.1.0"
 author = "Marcus Ramberg"
-description = "Friendlier nixos tooling"
+description = "More user friendly nix tooling"
 license = "MIT"
 srcDir = "src"
 bin = @["hei"]
@@ -10,4 +10,4 @@ bin = @["hei"]
 
 # Dependencies
 
-requires "nim >= 2.0.0"
+requires "nim >= 2.0.2"
