@@ -298,7 +298,7 @@ makeCommand("upgrade",
         rebuildArgs.add(val)
       of cmdEnd:
         assert(false)
-    if exec("nix flake update " & flakePath) == 0:
+    if exec("nix flake update --flake " & flakePath) == 0:
       return dispatchTable["rebuild"].body(flakePath, rebuildArgs)
     echo "Update failed, not rebuilding."
     1
