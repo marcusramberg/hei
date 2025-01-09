@@ -2,7 +2,6 @@
 import os
 import strutils
 
-
 proc hasFlake(flake: string): bool =
   let strippedFlake = flake.strip(leading = false, chars = {'/'})
   return fileExists(strippedFlake & "/flake.nix")

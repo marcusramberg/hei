@@ -4,9 +4,16 @@
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
     utils.url = "github:numtide/flake-utils";
   };
-  outputs = { nixpkgs, utils, self, ... }:
+  outputs =
+    {
+      nixpkgs,
+      utils,
+      self,
+      ...
+    }:
 
-    utils.lib.eachDefaultSystem (system:
+    utils.lib.eachDefaultSystem (
+      system:
       let
         pkgs = nixpkgs.legacyPackages.${system}.pkgs;
       in
@@ -17,7 +24,7 @@
           src = ./.;
           nativeBuildInputs = with pkgs; [
             (writeScriptBin "git" ''
-              echo ${ self.ref or "dirty" }
+              echo ${self.ref or "dirty"}
             '')
             installShellFiles
           ];
@@ -38,6 +45,7 @@
         devShells.default = pkgs.mkShell {
           buildInputs = with pkgs; [
             nim
+            nph
             nimlsp
             nix-output-monitor
           ];
