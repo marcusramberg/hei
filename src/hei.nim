@@ -36,11 +36,6 @@ when isMainModule:
         quit()
       of "h", "help":
         break
-      of "i", "a", "q", "e", "p":
-        # run nix-env with the original command line arguments
-        echo "forwarding to nix-env ..."
-        let res = execShellCmd "nix-env " & commandLineParams().join(" ")
-        system.quit(res)
       else:
         echo "Unknown option: ", p.key, ". run `hei` for help."
         quit()

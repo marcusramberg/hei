@@ -33,12 +33,6 @@ makeCommand(
 
     A simpler nix experience (inspired by hey by hlissner)
 
-    Note: `hei` can also be used as a shortcut for nix-env:
-
-      hei -q
-      hei -iA nixos.htop
-      hei -e htop
-
     Available commands: """
 
     for cmd in dispatchTable.keys:
@@ -159,6 +153,10 @@ makeCommand("gc", help = "Garbage collect & optimize nix store", args = "[-a] [-
     if all or not sys:
       discard exec "nix-collect-garbage -d"
     return 0
+
+makeCommand("p", help = "nix profile commands", args =""):
+  proc(flakePath: string, args: seq[string]): int =
+    system.quit execShellCmd "nix profile " & args.join(" ")
 
 makeCommand(
   "rebuild",
