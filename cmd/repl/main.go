@@ -1,4 +1,4 @@
-package build
+package repl
 
 import (
 	"context"
@@ -8,13 +8,13 @@ import (
 )
 
 var Command = &cli.Command{
-	Name:      "build",
+	Name:      "repl",
 	ArgsUsage: "[flake-path...]",
-	Usage:     "Build the given flake paths or the default ones if none are provided",
-	Action:    buildAction,
+	Usage:     "open a repl in your nix config",
+	Action:    replAction,
 }
 
-func buildAction(ctx context.Context, c *cli.Command) error {
+func replAction(ctx context.Context, c *cli.Command) error {
 	log.Printf("Starting build action for %v", c.Args())
 	return nil
 }

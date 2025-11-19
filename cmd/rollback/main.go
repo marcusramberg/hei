@@ -1,4 +1,4 @@
-package build
+package rollback
 
 import (
 	"context"
@@ -8,9 +8,9 @@ import (
 )
 
 var Command = &cli.Command{
-	Name:      "build",
+	Name:      "rollback",
 	ArgsUsage: "[flake-path...]",
-	Usage:     "Build the given flake paths or the default ones if none are provided",
+	Usage:     "Roll back to previous generation of nixos. See gen list for the current generations.",
 	Action:    buildAction,
 }
 

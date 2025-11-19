@@ -1,4 +1,4 @@
-package build
+package search
 
 import (
 	"context"
@@ -8,9 +8,9 @@ import (
 )
 
 var Command = &cli.Command{
-	Name:      "build",
-	ArgsUsage: "[flake-path...]",
-	Usage:     "Build the given flake paths or the default ones if none are provided",
+	Name:      "search",
+	ArgsUsage: "[query]",
+	Usage:     "Search nixpkgs for packages",
 	Action:    buildAction,
 }
 

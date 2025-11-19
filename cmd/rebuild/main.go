@@ -1,4 +1,4 @@
-package build
+package rebuild
 
 import (
 	"context"
@@ -8,13 +8,13 @@ import (
 )
 
 var Command = &cli.Command{
-	Name:      "build",
+	Name:      "rebuild",
 	ArgsUsage: "[flake-path...]",
-	Usage:     "Build the given flake paths or the default ones if none are provided",
-	Action:    buildAction,
+	Usage:     "Rebuild your nix configuration",
+	Action:    rebuildAction,
 }
 
-func buildAction(ctx context.Context, c *cli.Command) error {
-	log.Printf("Starting build action for %v", c.Args())
+func rebuildAction(ctx context.Context, c *cli.Command) error {
+	log.Printf("Starting rebuild action for %v", c.Args())
 	return nil
 }

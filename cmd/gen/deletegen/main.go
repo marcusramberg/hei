@@ -1,4 +1,4 @@
-package build
+package deletegen
 
 import (
 	"context"
@@ -8,8 +8,8 @@ import (
 )
 
 var Command = &cli.Command{
-	Name:      "build",
-	ArgsUsage: "[flake-path...]",
+	Name:      "delete",
+	ArgsUsage: "[gen]",
 	Usage:     "Build the given flake paths or the default ones if none are provided",
 	Action:    buildAction,
 }

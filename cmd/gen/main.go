@@ -1,20 +1,18 @@
-package build
+package gen
 
 import (
-	"context"
-	"log"
-
+	"bas.es/marcus/hei/cmd/gen/deletegen"
+	"bas.es/marcus/hei/cmd/gen/diff"
+	"bas.es/marcus/hei/cmd/gen/list"
 	"github.com/urfave/cli/v3"
 )
 
 var Command = &cli.Command{
-	Name:      "build",
-	ArgsUsage: "[flake-path...]",
-	Usage:     "Build the given flake paths or the default ones if none are provided",
-	Action:    buildAction,
-}
-
-func buildAction(ctx context.Context, c *cli.Command) error {
-	log.Printf("Starting build action for %v", c.Args())
-	return nil
+	Name:  "gen",
+	Usage: "Manage nix generations",
+	Commands: []*cli.Command{
+		list.Command,
+		deletegen.Command,
+		diff.Command,
+	},
 }

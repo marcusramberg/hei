@@ -10,11 +10,11 @@ import (
 var Command = &cli.Command{
 	Name:      "gc",
 	ArgsUsage: "[]",
-	Usage:     "Garbe collection",
-	Action:    buildAction,
+	Usage:     "Garbage collection",
+	Action:    gcAction,
 }
 
-func buildAction(ctx context.Context, c *cli.Command) error {
-	log.Printf("Starting build action for %v", c.Args())
+func gcAction(ctx context.Context, c *cli.Command) error {
+	log.Printf("Starting garbage collection for %v", c.Args())
 	return nil
 }

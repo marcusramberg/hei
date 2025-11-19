@@ -1,4 +1,4 @@
-package build
+package show
 
 import (
 	"context"
@@ -8,9 +8,9 @@ import (
 )
 
 var Command = &cli.Command{
-	Name:      "build",
+	Name:      "show",
 	ArgsUsage: "[flake-path...]",
-	Usage:     "Build the given flake paths or the default ones if none are provided",
+	Usage:     "Run nix flake show on the given flake paths or the default ones if none are provided",
 	Action:    buildAction,
 }
 

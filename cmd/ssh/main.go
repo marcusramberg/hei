@@ -1,4 +1,4 @@
-package build
+package ssh
 
 import (
 	"context"
@@ -8,9 +8,9 @@ import (
 )
 
 var Command = &cli.Command{
-	Name:      "build",
+	Name:      "ssh",
 	ArgsUsage: "[flake-path...]",
-	Usage:     "Build the given flake paths or the default ones if none are provided",
+	Usage:     "ssh into a nix configuration",
 	Action:    buildAction,
 }
 

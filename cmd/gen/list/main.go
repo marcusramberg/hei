@@ -1,4 +1,4 @@
-package build
+package list
 
 import (
 	"context"
@@ -8,10 +8,9 @@ import (
 )
 
 var Command = &cli.Command{
-	Name:      "build",
-	ArgsUsage: "[flake-path...]",
-	Usage:     "Build the given flake paths or the default ones if none are provided",
-	Action:    buildAction,
+	Name:   "list",
+	Usage:  "List nix generations",
+	Action: buildAction,
 }
 
 func buildAction(ctx context.Context, c *cli.Command) error {

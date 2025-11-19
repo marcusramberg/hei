@@ -9,12 +9,12 @@ import (
 
 var Command = &cli.Command{
 	Name:      "check",
-	ArgsUsage: "[flaKe-path...]",
-	Usage:     "Build the given flake paths or the default ones if none are provided",
-	Action:    buildAction,
+	ArgsUsage: "[flaKe-path]",
+	Usage:     "Run checks on the given flake paths or the default ones if none are provided",
+	Action:    checkAction,
 }
 
-func buildAction(ctx context.Context, c *cli.Command) error {
-	log.Printf("Starting build action for %v", c.Args())
+func checkAction(ctx context.Context, c *cli.Command) error {
+	log.Printf("Starting check action for %v", c.Args())
 	return nil
 }

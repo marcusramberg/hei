@@ -1,4 +1,4 @@
-package build
+package test
 
 import (
 	"context"
@@ -8,13 +8,13 @@ import (
 )
 
 var Command = &cli.Command{
-	Name:      "build",
+	Name:      "test",
 	ArgsUsage: "[flake-path...]",
-	Usage:     "Build the given flake paths or the default ones if none are provided",
-	Action:    buildAction,
+	Usage:     "Run a test in an interactive shell",
+	Action:    testAction,
 }
 
-func buildAction(ctx context.Context, c *cli.Command) error {
+func testAction(ctx context.Context, c *cli.Command) error {
 	log.Printf("Starting build action for %v", c.Args())
 	return nil
 }

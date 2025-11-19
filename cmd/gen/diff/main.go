@@ -1,4 +1,4 @@
-package build
+package diff
 
 import (
 	"context"
@@ -8,8 +8,8 @@ import (
 )
 
 var Command = &cli.Command{
-	Name:      "build",
-	ArgsUsage: "[flake-path...]",
+	Name:      "diff",
+	ArgsUsage: "[gen1] [gen2]",
 	Usage:     "Build the given flake paths or the default ones if none are provided",
 	Action:    buildAction,
 }

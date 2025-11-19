@@ -1,4 +1,4 @@
-package build
+package upgrade
 
 import (
 	"context"
@@ -8,9 +8,9 @@ import (
 )
 
 var Command = &cli.Command{
-	Name:      "build",
+	Name:      "upgrade",
 	ArgsUsage: "[flake-path...]",
-	Usage:     "Build the given flake paths or the default ones if none are provided",
+	Usage:     "Update then rebuild the given flake paths or the default ones if none are provided",
 	Action:    buildAction,
 }
 
