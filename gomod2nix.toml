@@ -1,0 +1,6 @@
+schema = 3
+
+[mod]
+  [mod."github.com/urfave/cli/v3"]
+    version = "v3.6.1"
+    hash = "sha256-q1WeKEvWoSyA0Wcan+Edjm71e0/vnPmqVvlfjUix7+8="
