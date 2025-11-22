@@ -13,8 +13,8 @@ var Command = &cli.Command{
 	Usage:     "Update the given flake paths or the default ones if none are provided",
 	Flags: []cli.Flag{
 		&cli.BoolFlag{
-			Name:    "pull",
-			Aliases: []string{"p"},
+			Name:    "update",
+			Aliases: []string{"u"},
 			Usage:   "Do 'git pull' before updating the flake",
 		},
 	},
@@ -26,5 +26,5 @@ func updateAction(ctx context.Context, c *cli.Command) error {
 	if c.Bool("pull") {
 		return utils.ExecWithStdout(c, "git", []string{"-C", flake, "pull"})
 	}
-	return utils.ExecWithStdout(c, "nix flake update ", append([]string{"--flake", flake}, c.Args().Slice()...))
+	return utils.ExecWithStdout(c, "nix", append([]string{"flake", "update", "--flake", flake}, c.Args().Slice()...))
 }
