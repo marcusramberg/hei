@@ -2,8 +2,8 @@ package check
 
 import (
 	"context"
-	"log"
 
+	"code.bas.es/marcus/hei/utils"
 	"github.com/urfave/cli/v3"
 )
 
@@ -15,6 +15,9 @@ var Command = &cli.Command{
 }
 
 func checkAction(ctx context.Context, c *cli.Command) error {
-	log.Printf("Starting check action for %v", c.Args())
-	return nil
+	if c.Args().Present() {
+		return utils.ExecWithStdout(c, "nix", append([]string{"flake", "check"}, c.Args().Slice()...))
+	}
+	flake := utils.GetFlake(c)
+	return utils.ExecWithStdout(c, "nix", []string{"flake", "check", flake})
 }

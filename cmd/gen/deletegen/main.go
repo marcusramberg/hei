@@ -2,8 +2,9 @@ package deletegen
 
 import (
 	"context"
-	"log"
+	"errors"
 
+	"code.bas.es/marcus/hei/utils"
 	"github.com/urfave/cli/v3"
 )
 
@@ -11,10 +12,12 @@ var Command = &cli.Command{
 	Name:      "delete",
 	ArgsUsage: "[gen]",
 	Usage:     "Build the given flake paths or the default ones if none are provided",
-	Action:    buildAction,
+	Action:    delAction,
 }
 
-func buildAction(ctx context.Context, c *cli.Command) error {
-	log.Printf("Starting build action for %v", c.Args())
-	return nil
+func delAction(ctx context.Context, c *cli.Command) error {
+	if c.Args().Len() != 1 {
+		return errors.New("you must provide 1 argument, the generation to delete")
+	}
+	return utils.ExecWithStdout(c, "sudo", []string{"nix-env", "--delete-generations", "--profile", "/nix/var/nix/profiles/system", c.Args().Get(0)})
 }

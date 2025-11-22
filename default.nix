@@ -19,6 +19,10 @@ in
 buildGoApplication {
   pname = "hei";
   inherit version;
+  nativeBuildInputs = with pkgs; [
+    nom
+    nvd
+  ];
   pwd = ./.;
   src = ./.;
   modules = ./gomod2nix.toml;

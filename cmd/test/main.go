@@ -2,19 +2,38 @@ package test
 
 import (
 	"context"
-	"log"
+	"errors"
+	"fmt"
 
+	"code.bas.es/marcus/hei/utils"
 	"github.com/urfave/cli/v3"
 )
 
 var Command = &cli.Command{
 	Name:      "test",
-	ArgsUsage: "[flake-path...]",
-	Usage:     "Run a test in an interactive shell",
+	ArgsUsage: "[test target]",
+	Usage:     "Run a nix check",
 	Action:    testAction,
+	Flags: []cli.Flag{
+		&cli.BoolFlag{
+			Name:    "interactive",
+			Aliases: []string{"i"},
+			Usage:   "Run the test with the interctive test driver",
+		},
+	},
 }
 
 func testAction(ctx context.Context, c *cli.Command) error {
-	log.Printf("Starting build action for %v", c.Args())
-	return nil
+	flake := utils.GetFlake(c)
+	if c.Bool("interactive") {
+		if c.Args().Len() != 1 {
+			return errors.New("takes one argument, the nix test to run")
+		}
+		err := utils.ExecWithStdout(c, "nix", []string{"build", fmt.Sprintf("%s#%s.driverInteractive", flake, c.Args().First())})
+		if err != nil {
+			return fmt.Errorf("failed to build the interactive test driver: %w", err)
+		}
+		return utils.ExecWithStdout(c, "./result/bin/nixos-test-driver", nil)
+	}
+	return utils.ExecWithStdout(c, "nom", []string{"build", fmt.Sprintf("%s#%s", flake, c.Args().First())})
 }

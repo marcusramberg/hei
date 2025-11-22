@@ -1,0 +1,38 @@
+version: "3"
+
+tasks:
+  run:
+    desc: Run app
+    env: {}
+    cmds:
+      - go run main.go
+
+  build:
+    desc: Build app
+    env: {
+      CGO_ENABLED=0
+    }
+    cmds:
+      - go build
+      - echo "build completed"
+
+  tidy:
+    desc: Tidy the Go module dependencies
+    cmds:
+      - go mod tidy
+
+  test:
+    desc: Run the tests
+    cmds:
+      - go test -tags "fts5" -race -cover ./...
+
+  shellcheck:
+    desc: Verify all scripts with shellcheck
+    cmds:
+      - shellcheck .
+
+  help:
+    desc: Display this help
+    silent: true
+    cmds:
+      - task --list

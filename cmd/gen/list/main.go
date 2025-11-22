@@ -2,18 +2,17 @@ package list
 
 import (
 	"context"
-	"log"
 
+	"code.bas.es/marcus/hei/utils"
 	"github.com/urfave/cli/v3"
 )
 
 var Command = &cli.Command{
 	Name:   "list",
 	Usage:  "List nix generations",
-	Action: buildAction,
+	Action: switchAction,
 }
 
-func buildAction(ctx context.Context, c *cli.Command) error {
-	log.Printf("Starting build action for %v", c.Args())
-	return nil
+func switchAction(ctx context.Context, c *cli.Command) error {
+	return utils.ExecWithStdout(c, "sudo", []string{"nix-env", "--list-generations", "--profile", "/nix/var/nix/profiles/system"})
 }

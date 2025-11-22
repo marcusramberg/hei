@@ -2,19 +2,17 @@ package upgrade
 
 import (
 	"context"
-	"log"
+	"errors"
 
 	"github.com/urfave/cli/v3"
 )
 
 var Command = &cli.Command{
-	Name:      "upgrade",
-	ArgsUsage: "[flake-path...]",
-	Usage:     "Update then rebuild the given flake paths or the default ones if none are provided",
-	Action:    buildAction,
+	Name:   "upgrade",
+	Usage:  "deprecated, use rebuild -u instead",
+	Action: upgradeAction,
 }
 
-func buildAction(ctx context.Context, c *cli.Command) error {
-	log.Printf("Starting build action for %v", c.Args())
-	return nil
+func upgradeAction(ctx context.Context, c *cli.Command) error {
+	return errors.New("deprecated: use rebuild -u instead")
 }

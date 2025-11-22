@@ -2,19 +2,18 @@ package ssh
 
 import (
 	"context"
-	"log"
 
+	"code.bas.es/marcus/hei/utils"
 	"github.com/urfave/cli/v3"
 )
 
 var Command = &cli.Command{
 	Name:      "ssh",
-	ArgsUsage: "[flake-path...]",
-	Usage:     "ssh into a nix configuration",
+	ArgsUsage: "[host, command]",
+	Usage:     "Run a hei command on a remote NixOS system",
 	Action:    buildAction,
 }
 
 func buildAction(ctx context.Context, c *cli.Command) error {
-	log.Printf("Starting build action for %v", c.Args())
-	return nil
+	return utils.ExecWithStdout(c, "ssh", append([]string{c.Args().First(), "hei"}, c.Args().Tail()...))
 }

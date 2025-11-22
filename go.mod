@@ -1,4 +1,4 @@
-module bas.es/marcus/hei
+module code.bas.es/marcus/hei
 
 go 1.25.3
 

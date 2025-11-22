@@ -1,9 +1,10 @@
 package gen
 
 import (
-	"bas.es/marcus/hei/cmd/gen/deletegen"
-	"bas.es/marcus/hei/cmd/gen/diff"
-	"bas.es/marcus/hei/cmd/gen/list"
+	"code.bas.es/marcus/hei/cmd/gen/deletegen"
+	"code.bas.es/marcus/hei/cmd/gen/diff"
+	"code.bas.es/marcus/hei/cmd/gen/list"
+	"code.bas.es/marcus/hei/cmd/gen/switchgen"
 	"github.com/urfave/cli/v3"
 )
 
@@ -14,5 +15,6 @@ var Command = &cli.Command{
 		list.Command,
 		deletegen.Command,
 		diff.Command,
+		switchgen.Command,
 	},
 }

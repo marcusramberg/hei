@@ -3,6 +3,7 @@ package utils
 import (
 	"fmt"
 	"log"
+	"log/slog"
 	"os"
 	"os/exec"
 
@@ -32,11 +33,16 @@ func GetFlake(c *cli.Command) string {
 	return ""
 }
 
-func ExecWithStdout(cmd string, args []string) error {
-	c := exec.Command(cmd, args...)
-	c.Stdout = os.Stdout
-	c.Stderr = os.Stderr
-	if err := c.Run(); err != nil {
+func ExecWithStdout(c *cli.Command, cmd string, args []string) error {
+	if c.Bool("dry-run") {
+		slog.Info("dry-run:", "cmd", cmd, "args", args)
+		return nil
+	}
+	ec := exec.Command(cmd, args...)
+	ec.Stdin = os.Stdin
+	ec.Stdout = os.Stdout
+	ec.Stderr = os.Stderr
+	if err := ec.Run(); err != nil {
 		return err
 	}
 

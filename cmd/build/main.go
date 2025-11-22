@@ -2,32 +2,31 @@ package build
 
 import (
 	"context"
-	"log"
+	"fmt"
 	"os/exec"
 
-	"bas.es/marcus/hei/utils"
+	"code.bas.es/marcus/hei/utils"
 	"github.com/urfave/cli/v3"
 )
 
 var Command = &cli.Command{
 	Name:      "build",
 	ArgsUsage: "[flake-path...]",
-	Usage:     "Build the given flake paths or the default ones if none are provided",
+	Usage:     "Run nix flake check on your flake",
 	Action:    buildAction,
 }
 
 func buildAction(ctx context.Context, c *cli.Command) error {
-	log.Printf("Starting build action for %v", c.Args())
 	builder, err := exec.LookPath("nom")
 	if err != nil {
 		builder, err = exec.LookPath("nix")
 		if err != nil {
-			log.Fatalf("Cannot build, neither 'nom' nor 'nix' found in PATH")
+			return fmt.Errorf("cannot build, neither 'nom' nor 'nix' found in PATH: %w", err)
 		}
 	}
 	if c.Args().Present() {
-		return utils.ExecWithStdout(builder, append([]string{"build"}, c.Args().Slice()...))
+		return utils.ExecWithStdout(c, builder, append([]string{"build"}, c.Args().Slice()...))
 	}
 	flake := utils.GetFlake(c)
-	return utils.ExecWithStdout(builder, []string{"build", flake})
+	return utils.ExecWithStdout(c, builder, []string{"build", flake})
 }

@@ -2,8 +2,8 @@ package p
 
 import (
 	"context"
-	"log"
 
+	"code.bas.es/marcus/hei/utils"
 	"github.com/urfave/cli/v3"
 )
 
@@ -15,6 +15,5 @@ var Command = &cli.Command{
 }
 
 func profileAction(ctx context.Context, c *cli.Command) error {
-	log.Printf("Starting build action for %v", c.Args())
-	return nil
+	return utils.ExecWithStdout(c, "nix", append([]string{"profile"}, c.Args().Slice()...))
 }

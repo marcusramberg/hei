@@ -2,8 +2,8 @@ package show
 
 import (
 	"context"
-	"log"
 
+	"code.bas.es/marcus/hei/utils"
 	"github.com/urfave/cli/v3"
 )
 
@@ -15,6 +15,6 @@ var Command = &cli.Command{
 }
 
 func buildAction(ctx context.Context, c *cli.Command) error {
-	log.Printf("Starting build action for %v", c.Args())
-	return nil
+	flake := utils.GetFlake(c)
+	return utils.ExecWithStdout(c, "nix", []string{"flake", "show", flake})
 }

@@ -5,20 +5,21 @@ import (
 	"log"
 	"os"
 
-	"bas.es/marcus/hei/cmd/build"
-	"bas.es/marcus/hei/cmd/check"
-	"bas.es/marcus/hei/cmd/gc"
-	"bas.es/marcus/hei/cmd/gen"
-	"bas.es/marcus/hei/cmd/p"
-	"bas.es/marcus/hei/cmd/rebuild"
-	"bas.es/marcus/hei/cmd/repl"
-	"bas.es/marcus/hei/cmd/rollback"
-	"bas.es/marcus/hei/cmd/search"
-	"bas.es/marcus/hei/cmd/show"
-	"bas.es/marcus/hei/cmd/ssh"
-	"bas.es/marcus/hei/cmd/test"
-	"bas.es/marcus/hei/cmd/update"
-	"bas.es/marcus/hei/cmd/upgrade"
+	"code.bas.es/marcus/hei/cmd/build"
+	"code.bas.es/marcus/hei/cmd/check"
+	"code.bas.es/marcus/hei/cmd/gc"
+	"code.bas.es/marcus/hei/cmd/gen"
+	"code.bas.es/marcus/hei/cmd/p"
+	"code.bas.es/marcus/hei/cmd/rebuild"
+	"code.bas.es/marcus/hei/cmd/repl"
+	"code.bas.es/marcus/hei/cmd/rollback"
+	"code.bas.es/marcus/hei/cmd/search"
+	"code.bas.es/marcus/hei/cmd/show"
+	"code.bas.es/marcus/hei/cmd/ssh"
+	"code.bas.es/marcus/hei/cmd/swap"
+	"code.bas.es/marcus/hei/cmd/test"
+	"code.bas.es/marcus/hei/cmd/update"
+	"code.bas.es/marcus/hei/cmd/upgrade"
 	"github.com/urfave/cli/v3"
 )
 
@@ -28,6 +29,7 @@ func main() {
 	hei := cli.Command{}
 	hei.Name = "hei"
 	hei.Description = "A simple consistent command wrapper for nix"
+	hei.UseShortOptionHandling = true
 	hei.Version = Version
 	hei.Usage = "A simple consistent command wrapper for nix"
 	hei.ConfigureShellCompletionCommand = func(c *cli.Command) {
@@ -47,6 +49,7 @@ func main() {
 		search.Command,
 		show.Command,
 		ssh.Command,
+		swap.Command,
 		test.Command,
 		upgrade.Command,
 		update.Command,
