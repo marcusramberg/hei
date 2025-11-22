@@ -20,6 +20,7 @@ import (
 	"code.bas.es/marcus/hei/cmd/test"
 	"code.bas.es/marcus/hei/cmd/update"
 	"code.bas.es/marcus/hei/cmd/upgrade"
+	docs "github.com/urfave/cli-docs/v3"
 	"github.com/urfave/cli/v3"
 )
 
@@ -53,6 +54,29 @@ func main() {
 		test.Command,
 		upgrade.Command,
 		update.Command,
+		{
+			Name:   "gen-docs",
+			Hidden: true,
+			Action: func(ctx context.Context, c *cli.Command) error {
+				md, err := docs.ToMarkdown(&hei)
+				if err != nil {
+					return err
+				}
+				err = os.WriteFile("docs.md", []byte(md), 0o644)
+				if err != nil {
+					return err
+				}
+				man, err := docs.ToMan(&hei)
+				if err != nil {
+					return err
+				}
+				err = os.WriteFile("hei.1.man", []byte(man), 0o644)
+				if err != nil {
+					return err
+				}
+				return nil
+			},
+		},
 	}
 	hei.Flags = setupFlags()
 

@@ -22,6 +22,7 @@ buildGoApplication {
   nativeBuildInputs = with pkgs; [
     nom
     nvd
+    installShellFiles
   ];
   pwd = ./.;
   src = ./.;
@@ -30,4 +31,11 @@ buildGoApplication {
     "-s -w"
     "-X main.Version=${version}"
   ];
+  postInstall = ''
+    installManPage ./hei.1.man
+    installShellCompletion --cmd hei \
+      --bash <($out/bin/hei completion bash) \
+      --fish <($out/bin/hei completion fish ) \
+      --zsh <($out/bin/hei completion zsh)
+  '';
 }

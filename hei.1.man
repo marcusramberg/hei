@@ -1,0 +1,305 @@
+.nh
+.TH hei 8
+
+.SH NAME
+.PP
+hei - A simple consistent command wrapper for nix
+
+
+.SH SYNOPSIS
+.PP
+hei
+
+.PP
+.RS
+
+.nf
+[--debug|-D]
+[--dry-run|-d]
+[--flake|-f]=[value]
+[--help|-h]
+[--version|-v]
+
+.fi
+.RE
+
+
+.SH DESCRIPTION
+.PP
+A simple consistent command wrapper for nix
+
+.PP
+\fBUsage\fP:
+
+.PP
+.RS
+
+.nf
+hei [GLOBAL OPTIONS] [command [COMMAND OPTIONS]] [ARGUMENTS...]
+
+.fi
+.RE
+
+
+.SH GLOBAL OPTIONS
+.PP
+\fB--debug, -D\fP: Enable debug logging
+
+.PP
+\fB--dry-run, -d\fP: Perform a dry run without making any changes
+
+.PP
+\fB--flake, -f\fP="": Path to flake. Will default to auto-detect
+
+.PP
+\fB--help, -h\fP: show help
+
+.PP
+\fB--version, -v\fP: print the version
+
+
+.SH COMMANDS
+.SH build
+.PP
+Run nix flake check on your flake
+
+.PP
+\fB--help, -h\fP: show help
+
+.SS help, h
+.PP
+Shows a list of commands or help for one command
+
+.SH check
+.PP
+Run checks on the given flake paths or the default ones if none are provided
+
+.PP
+\fB--help, -h\fP: show help
+
+.SS help, h
+.PP
+Shows a list of commands or help for one command
+
+.SH gc
+.PP
+Garbage collect & optimize nix store
+
+.PP
+\fB--all, -a\fP: Collect all garbage
+
+.PP
+\fB--help, -h\fP: show help
+
+.PP
+\fB--system, -s\fP: Collect system garbage
+
+.SS help, h
+.PP
+Shows a list of commands or help for one command
+
+.SH gen
+.PP
+Manage nix generations
+
+.PP
+\fB--help, -h\fP: show help
+
+.SS list
+.PP
+List nix generations
+
+.PP
+\fB--help, -h\fP: show help
+
+.SS help, h
+.PP
+Shows a list of commands or help for one command
+
+.SS delete
+.PP
+Build the given flake paths or the default ones if none are provided
+
+.PP
+\fB--help, -h\fP: show help
+
+.SS help, h
+.PP
+Shows a list of commands or help for one command
+
+.SS diff
+.PP
+Build the given flake paths or the default ones if none are provided
+
+.PP
+\fB--help, -h\fP: show help
+
+.SS help, h
+.PP
+Shows a list of commands or help for one command
+
+.SS switch
+.PP
+Switch generation
+
+.PP
+\fB--help, -h\fP: show help
+
+.SS help, h
+.PP
+Shows a list of commands or help for one command
+
+.SS help, h
+.PP
+Shows a list of commands or help for one command
+
+.SH p
+.PP
+Shortcut for nix profile commands
+
+.PP
+\fB--help, -h\fP: show help
+
+.SS help, h
+.PP
+Shows a list of commands or help for one command
+
+.SH rebuild
+.PP
+Rebuild your nix configuration
+
+.PP
+\fB--fast, -f\fP: Build in fast mode
+
+.PP
+\fB--help, -h\fP: show help
+
+.PP
+\fB--offline, -o\fP: Build in offline mode
+
+.PP
+\fB--rollback, -r\fP: Build in fast mode
+
+.PP
+\fB--update, -u\fP: Pull on nix flake before rebuilding
+
+.SS help, h
+.PP
+Shows a list of commands or help for one command
+
+.SH repl
+.PP
+open a repl in your nix config
+
+.PP
+\fB--help, -h\fP: show help
+
+.SS help, h
+.PP
+Shows a list of commands or help for one command
+
+.SH rollback
+.PP
+Roll back to previous generation of nixos. See gen list for the current generations.
+
+.PP
+\fB--help, -h\fP: show help
+
+.SS help, h
+.PP
+Shows a list of commands or help for one command
+
+.SH search
+.PP
+Search nixpkgs for packages
+
+.PP
+\fB--help, -h\fP: show help
+
+.SS help, h
+.PP
+Shows a list of commands or help for one command
+
+.SH show
+.PP
+Run nix flake show on the given flake paths or the default ones if none are provided
+
+.PP
+\fB--help, -h\fP: show help
+
+.SS help, h
+.PP
+Shows a list of commands or help for one command
+
+.SH ssh
+.PP
+Run a hei command on a remote NixOS system
+
+.PP
+\fB--help, -h\fP: show help
+
+.SS help, h
+.PP
+Shows a list of commands or help for one command
+
+.SH swap
+.PP
+Recursively swap nix-store symlinks with copies (or back)
+
+.PP
+\fB--help, -h\fP: show help
+
+.SS help, h
+.PP
+Shows a list of commands or help for one command
+
+.SH test
+.PP
+Run a nix check
+
+.PP
+\fB--help, -h\fP: show help
+
+.PP
+\fB--interactive, -i\fP: Run the test with the interctive test driver
+
+.SS help, h
+.PP
+Shows a list of commands or help for one command
+
+.SH upgrade
+.PP
+deprecated, use rebuild -u instead
+
+.PP
+\fB--help, -h\fP: show help
+
+.SS help, h
+.PP
+Shows a list of commands or help for one command
+
+.SH update
+.PP
+Update the given flake paths or the default ones if none are provided
+
+.PP
+\fB--help, -h\fP: show help
+
+.SS help, h
+.PP
+Shows a list of commands or help for one command
+
+.SH help, h
+.PP
+Shows a list of commands or help for one command
+
+.SH completion
+.PP
+Generate shell completion scripts
+
+.PP
+\fB--help, -h\fP: show help
+
+.SS help, h
+.PP
+Shows a list of commands or help for one command
