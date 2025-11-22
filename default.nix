@@ -20,9 +20,8 @@ buildGoApplication {
   pname = "hei";
   inherit version;
   nativeBuildInputs = with pkgs; [
-    nom
-    nvd
     installShellFiles
+    makeWrapper
   ];
   pwd = ./.;
   src = ./.;
@@ -37,5 +36,12 @@ buildGoApplication {
       --bash <($out/bin/hei completion bash) \
       --fish <($out/bin/hei completion fish ) \
       --zsh <($out/bin/hei completion zsh)
+      wrapProgram $out/bin/hei \
+          --prefix PATH : ${
+            pkgs.lib.makeBinPath [
+              pkgs.nom
+              pkgs.nvd
+            ]
+          }
   '';
 }
