@@ -2,7 +2,6 @@ package rebuild
 
 import (
 	"context"
-	"errors"
 	"runtime"
 
 	"code.bas.es/marcus/hei/utils"
@@ -11,7 +10,7 @@ import (
 
 var Command = &cli.Command{
 	Name:      "rebuild",
-	ArgsUsage: "[switch|boot|..]",
+	ArgsUsage: "<[switch|boot|..]> - defaults to switch",
 	Usage:     "Rebuild your nix configuration",
 	Flags: []cli.Flag{
 		&cli.BoolFlag{
@@ -52,9 +51,6 @@ func rebuildAction(ctx context.Context, c *cli.Command) error {
 	}
 	args = append(args, "--flake", flake)
 
-	if !c.Args().Present() {
-		return errors.New("rebuild called without required arguments (switch/boot/build/...)")
-	}
 	if c.Bool("rollback") {
 		args = append(args, "--rollback")
 	}
@@ -63,6 +59,11 @@ func rebuildAction(ctx context.Context, c *cli.Command) error {
 	}
 	if c.Bool("offline") {
 		args = append(args, "--option", "substitute", "false")
+	}
+	if c.Args().Present() {
+		args = append(args, c.Args().Slice()...)
+	} else {
+		args = append(args, "switch")
 	}
 	return utils.ExecWithStdout(c, "sudo", append(args, c.Args().Slice()...))
 }
