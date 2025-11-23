@@ -9,6 +9,8 @@ import (
 	"github.com/urfave/cli/v3"
 )
 
+var errArgMissing = errors.New("missing required argument")
+
 var Command = &cli.Command{
 	Name:      "test",
 	ArgsUsage: "[test target]",
@@ -27,7 +29,7 @@ func testAction(ctx context.Context, c *cli.Command) error {
 	flake := utils.GetFlake(c)
 	if c.Bool("interactive") {
 		if c.Args().Len() != 1 {
-			return errors.New("takes one argument, the nix test to run")
+			return fmt.Errorf("%w,takes one argument, the nix test to run", errArgMissing)
 		}
 		err := utils.ExecWithStdout(c, "nix", []string{"build", fmt.Sprintf("%s#%s.driverInteractive", flake, c.Args().First())})
 		if err != nil {

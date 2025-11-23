@@ -10,6 +10,11 @@ import (
 	"github.com/urfave/cli/v3"
 )
 
+var (
+	errToolMissing = errors.New("nvd tool must be installed for diffs")
+	errArgMissing  = errors.New("required arguments are missing")
+)
+
 var Command = &cli.Command{
 	Name:      "diff",
 	ArgsUsage: "[gen1] [gen2]",
@@ -20,10 +25,10 @@ var Command = &cli.Command{
 func buildAction(ctx context.Context, c *cli.Command) error {
 	nvd, err := exec.LookPath("nvd")
 	if err != nil {
-		return errors.New("nvd tool must be installed for diffs")
+		return fmt.Errorf("%w: nvd tool must be installed for diffs", errToolMissing)
 	}
 	if c.Args().Len() != 2 {
-		return errors.New("you must provide 2 argument, from and to generation")
+		return fmt.Errorf("%w: you must provide 2 argument, from and to generation", errArgMissing)
 	}
 	return utils.ExecWithStdout(c, nvd, []string{
 		"diff",

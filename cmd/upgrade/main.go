@@ -3,9 +3,12 @@ package upgrade
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"github.com/urfave/cli/v3"
 )
+
+var errDeprecated = errors.New("deprecated")
 
 var Command = &cli.Command{
 	Name:   "upgrade",
@@ -14,5 +17,5 @@ var Command = &cli.Command{
 }
 
 func upgradeAction(ctx context.Context, c *cli.Command) error {
-	return errors.New("deprecated: use rebuild -u instead")
+	return fmt.Errorf("%w: use rebuild -u instead", errDeprecated)
 }

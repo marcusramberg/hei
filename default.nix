@@ -31,7 +31,7 @@ buildGoApplication {
     "-X main.Version=${version}"
   ];
   postInstall = ''
-    installManPage ./hei.1.man
+    installManPage ./hei.1.man --name hei.1
     installShellCompletion --cmd hei \
       --bash <($out/bin/hei completion bash) \
       --fish <($out/bin/hei completion fish ) \

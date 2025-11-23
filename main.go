@@ -27,6 +27,10 @@ import (
 var Version string = "dev"
 
 func main() {
+	run(os.Args)
+}
+
+func run(args []string) {
 	hei := cli.Command{}
 	hei.Name = "hei"
 	hei.Description = "A simple consistent command wrapper for nix"
@@ -38,7 +42,16 @@ func main() {
 		c.Usage = "Generate shell completion scripts"
 	}
 	hei.Suggest = true
-	hei.Commands = []*cli.Command{
+	hei.Commands = setupCommands()
+	hei.Flags = setupFlags()
+
+	if err := hei.Run(context.Background(), args); err != nil {
+		log.Fatalf("error: %v", err)
+	}
+}
+
+func setupCommands() []*cli.Command {
+	return []*cli.Command{
 		build.Command,
 		check.Command,
 		gc.Command,
@@ -58,30 +71,25 @@ func main() {
 			Name:   "gen-docs",
 			Hidden: true,
 			Action: func(ctx context.Context, c *cli.Command) error {
-				md, err := docs.ToMarkdown(&hei)
+				md, err := docs.ToMarkdown(c.Root())
 				if err != nil {
 					return err
 				}
-				err = os.WriteFile("docs.md", []byte(md), 0o644)
+				err = os.WriteFile("docs.md", []byte(md), 0o600)
 				if err != nil {
 					return err
 				}
-				man, err := docs.ToMan(&hei)
+				man, err := docs.ToMan(c.Root())
 				if err != nil {
 					return err
 				}
-				err = os.WriteFile("hei.1.man", []byte(man), 0o644)
+				err = os.WriteFile("hei.1.man", []byte(man), 0o600)
 				if err != nil {
 					return err
 				}
 				return nil
 			},
 		},
-	}
-	hei.Flags = setupFlags()
-
-	if err := hei.Run(context.Background(), os.Args); err != nil {
-		log.Fatalf("error: %v", err)
 	}
 }
 
