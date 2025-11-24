@@ -39,8 +39,8 @@ buildGoApplication {
       wrapProgram $out/bin/hei \
           --prefix PATH : ${
             pkgs.lib.makeBinPath [
-              pkgs.nom
               pkgs.nvd
+              pkgs.nix-output-monitor
             ]
           }
   '';
