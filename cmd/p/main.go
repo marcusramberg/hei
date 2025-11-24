@@ -15,5 +15,5 @@ var Command = &cli.Command{
 }
 
 func profileAction(ctx context.Context, c *cli.Command) error {
-	return utils.ExecWithStdout(c, "nix", append([]string{"profile"}, c.Args().Slice()...))
+	return utils.ExecWithStdio(c, "nix", append([]string{"profile"}, c.Args().Slice()...))
 }

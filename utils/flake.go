@@ -34,7 +34,7 @@ func GetFlake(c *cli.Command) string {
 	return ""
 }
 
-func ExecWithStdout(c *cli.Command, cmd string, args []string) error {
+func ExecWithStdio(c *cli.Command, cmd string, args []string) error {
 	if c.Bool("dry-run") {
 		slog.Info("dry-run:", "cmd", cmd, "args", args)
 		return nil

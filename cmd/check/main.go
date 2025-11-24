@@ -16,8 +16,8 @@ var Command = &cli.Command{
 
 func checkAction(ctx context.Context, c *cli.Command) error {
 	if c.Args().Present() {
-		return utils.ExecWithStdout(c, "nix", append([]string{"flake", "check"}, c.Args().Slice()...))
+		return utils.ExecWithStdio(c, "nix", append([]string{"flake", "check"}, c.Args().Slice()...))
 	}
 	flake := utils.GetFlake(c)
-	return utils.ExecWithStdout(c, "nix", []string{"flake", "check", flake})
+	return utils.ExecWithStdio(c, "nix", []string{"flake", "check", flake})
 }

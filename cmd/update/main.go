@@ -24,7 +24,7 @@ var Command = &cli.Command{
 func updateAction(ctx context.Context, c *cli.Command) error {
 	flake := utils.GetFlake(c)
 	if c.Bool("pull") {
-		return utils.ExecWithStdout(c, "git", []string{"-C", flake, "pull"})
+		return utils.ExecWithStdio(c, "git", []string{"-C", flake, "pull"})
 	}
-	return utils.ExecWithStdout(c, "nix", append([]string{"flake", "update", "--flake", flake}, c.Args().Slice()...))
+	return utils.ExecWithStdio(c, "nix", append([]string{"flake", "update", "--flake", flake}, c.Args().Slice()...))
 }

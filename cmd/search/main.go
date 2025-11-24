@@ -15,5 +15,5 @@ var Command = &cli.Command{
 }
 
 func buildAction(ctx context.Context, c *cli.Command) error {
-	return utils.ExecWithStdout(c, "nix", append([]string{"search", "nixpkgs"}, c.Args().Slice()...))
+	return utils.ExecWithStdio(c, "nix", append([]string{"search", "nixpkgs"}, c.Args().Slice()...))
 }

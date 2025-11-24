@@ -6,5 +6,5 @@ import (
 
 func TestMain(t *testing.T) {
 	t.Parallel()
-	run([]string{"hei", "-f", ".", "show"})
+	run([]string{"hei", "-d", "-f", ".", "show"})
 }

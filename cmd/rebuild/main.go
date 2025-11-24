@@ -40,7 +40,7 @@ var Command = &cli.Command{
 func rebuildAction(ctx context.Context, c *cli.Command) error {
 	flake := utils.GetFlake(c)
 	if c.Bool("update") {
-		if err := utils.ExecWithStdout(c, "git", []string{"-C", flake, "pull"}); err != nil {
+		if err := utils.ExecWithStdio(c, "git", []string{"-C", flake, "pull"}); err != nil {
 			return err
 		}
 	}
@@ -65,5 +65,5 @@ func rebuildAction(ctx context.Context, c *cli.Command) error {
 	} else {
 		args = append(args, "switch")
 	}
-	return utils.ExecWithStdout(c, "sudo", append(args, c.Args().Slice()...))
+	return utils.ExecWithStdio(c, "sudo", append(args, c.Args().Slice()...))
 }

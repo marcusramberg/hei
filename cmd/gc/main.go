@@ -28,18 +28,18 @@ var Command = &cli.Command{
 
 func gcAction(ctx context.Context, c *cli.Command) error {
 	if c.Bool("all") || c.Bool("system") {
-		if err := utils.ExecWithStdout(c, "sudo", []string{"nix-collect-garbage", "-d"}); err != nil {
+		if err := utils.ExecWithStdio(c, "sudo", []string{"nix-collect-garbage", "-d"}); err != nil {
 			return err
 		}
-		if err := utils.ExecWithStdout(c, "sudo", []string{"nix-store", "--optimize"}); err != nil {
+		if err := utils.ExecWithStdio(c, "sudo", []string{"nix-store", "--optimize"}); err != nil {
 			return err
 		}
-		if err := utils.ExecWithStdout(c, "sudo", []string{"nix-env", "--delete-generations old", "--profile", "/nix/var/nix/profiles/system"}); err != nil {
+		if err := utils.ExecWithStdio(c, "sudo", []string{"nix-env", "--delete-generations old", "--profile", "/nix/var/nix/profiles/system"}); err != nil {
 			return err
 		}
 	}
 	if c.Bool("all") || !c.Bool("system") {
-		if err := utils.ExecWithStdout(c, "nix-collect-garbage", []string{"-d"}); err != nil {
+		if err := utils.ExecWithStdio(c, "nix-collect-garbage", []string{"-d"}); err != nil {
 			return err
 		}
 	}

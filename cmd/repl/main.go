@@ -17,5 +17,5 @@ var Command = &cli.Command{
 
 func replAction(ctx context.Context, c *cli.Command) error {
 	flake := utils.GetFlake(c)
-	return utils.ExecWithStdout(c, "nix", []string{"repl", "--file", fmt.Sprintf("%s/flake.nix", flake)})
+	return utils.ExecWithStdio(c, "nix", []string{"repl", "--file", fmt.Sprintf("%s/flake.nix", flake)})
 }

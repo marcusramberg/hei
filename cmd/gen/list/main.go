@@ -14,5 +14,5 @@ var Command = &cli.Command{
 }
 
 func switchAction(ctx context.Context, c *cli.Command) error {
-	return utils.ExecWithStdout(c, "sudo", []string{"nix-env", "--list-generations", "--profile", "/nix/var/nix/profiles/system"})
+	return utils.ExecWithStdio(c, "sudo", []string{"nix-env", "--list-generations", "--profile", "/nix/var/nix/profiles/system"})
 }
