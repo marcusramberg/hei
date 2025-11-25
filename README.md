@@ -11,11 +11,16 @@ hei can be used as a flake in your config, or you could run it directly here to 
 Run it without arguments to see the help message.
 
 # Features
+
 - Fast
 - Fully featured shell autocomplete
 - Automatically uses nom for builds if available
 - Work easily with generations, including nvd for diffs
 - Pull and upgrade your flake in one command
+
+# Try it out
+
+nix run github:marcusramberg/hei
 
 <!--start-->
 
@@ -56,7 +61,6 @@ hei [GLOBAL OPTIONS] [command [COMMAND OPTIONS]] [ARGUMENTS...]
 **--help, -h**: show help
 
 **--version, -v**: print the version
-
 
 # COMMANDS
 
@@ -277,4 +281,5 @@ Generate shell completion scripts
 ### help, h
 
 Shows a list of commands or help for one command
+
 <!--end-->

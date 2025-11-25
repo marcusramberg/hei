@@ -1,3 +1,4 @@
+// Package repl implements the "repl" command to open a Nix REPL in the specified flake.
 package repl
 
 import (

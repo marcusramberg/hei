@@ -1,3 +1,4 @@
+// Package build implements the 'build' command to build Nix flakes with nom
 package build
 
 import (

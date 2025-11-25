@@ -1,3 +1,4 @@
+// Package gen hooks up subcommands for managing nix generations
 package gen
 
 import (

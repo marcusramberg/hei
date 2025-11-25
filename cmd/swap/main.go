@@ -1,3 +1,5 @@
+// Package swap provides a CLI command to swap nix-store symlinks with their actual file contents and vice versa.
+// This allows for editing your files without rebuild for simple testing
 package swap
 
 import (
@@ -24,12 +26,12 @@ var Command = &cli.Command{
 	Name:      "swap",
 	ArgsUsage: "[targets]",
 	Usage:     "Recursively swap nix-store symlinks with copies (or back)",
-	Action:    testAction,
+	Action:    swapAction,
 }
 
-func testAction(ctx context.Context, c *cli.Command) error {
+func swapAction(ctx context.Context, c *cli.Command) error {
 	if !c.Args().Present() {
-		return fmt.Errorf("%w: must specify targets to swap", errArgMissing)
+		return fmt.Errorf("must specify targets to swap: %w", errArgMissing)
 	}
 	for _, t := range c.Args().Slice() {
 		err := filepath.Walk(t, recurseAndSwap)
@@ -41,7 +43,7 @@ func testAction(ctx context.Context, c *cli.Command) error {
 }
 
 func recurseAndSwap(path string, info os.FileInfo, err error) error {
-	if strings.Contains(path, backupSuffix) {
+	if strings.HasSuffix(path, backupSuffix) {
 		return nil
 	}
 	if err != nil {
@@ -84,7 +86,7 @@ func restoreBackup(path, backup string) error {
 		return fmt.Errorf("file %s found, and no backup to restore. Bailing out: %w", path, err)
 	}
 	if b.Mode()&fs.ModeSymlink == 0 {
-		return fmt.Errorf("%w: backup %s isn't a symlink, bailing out", errInvalidBackup, backup)
+		return fmt.Errorf("backup %s isn't a symlink, bailing out: %w", backup, errInvalidBackup)
 	}
 	err = os.Rename(backup, path)
 	if err != nil {

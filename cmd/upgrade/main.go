@@ -1,3 +1,4 @@
+// Package upgrade updates all your inputs and rebuilds your system.
 package upgrade
 
 import (
@@ -17,5 +18,5 @@ var Command = &cli.Command{
 }
 
 func upgradeAction(ctx context.Context, c *cli.Command) error {
-	return fmt.Errorf("%w: use rebuild -u instead", errDeprecated)
+	return fmt.Errorf("use rebuild -u instead: %w", errDeprecated)
 }

@@ -1,3 +1,4 @@
+// Package check implements the "check" command for running checks on Nix flakes.
 package check
 
 import (

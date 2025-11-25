@@ -1,3 +1,4 @@
+// Package switchgen implements the "switch" command to switch to a specified NixOS generation.
 package switchgen
 
 import (
@@ -22,7 +23,7 @@ var (
 
 func switchAction(ctx context.Context, c *cli.Command) error {
 	if c.Args().Len() != 1 {
-		return fmt.Errorf("%w: you must provide 1 argument, the generation to switch to", errArgMissing)
+		return fmt.Errorf("you must provide 1 argument, the generation to switch to: %w", errArgMissing)
 	}
 	gen := fmt.Sprintf("/nix/var/nix/profiles/system-%s-link/bin/switch-to-configuration", c.Args().First())
 	_, err := os.Stat(gen)

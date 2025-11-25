@@ -1,3 +1,4 @@
+// Package ssh lets you run hei commands over ssh
 package ssh
 
 import (

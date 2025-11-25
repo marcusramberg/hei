@@ -1,3 +1,4 @@
+// Package update lets you update a input to your flake, or all of them
 package update
 
 import (

@@ -1,3 +1,4 @@
+// Package rebuild implements the rebuild command
 package rebuild
 
 import (
@@ -5,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log/slog"
 	"os"
 	"os/exec"
 	"runtime"
@@ -33,7 +35,7 @@ var Command = &cli.Command{
 		&cli.BoolFlag{
 			Name:    "rollback",
 			Aliases: []string{"r"},
-			Usage:   "Build in fast mode",
+			Usage:   "Roll back to previous system",
 		},
 		&cli.BoolFlag{
 			Name:    "update",
@@ -76,9 +78,7 @@ func rebuildAction(ctx context.Context, c *cli.Command) error {
 		return buildConfirm(c, args)
 	}
 
-	if c.Args().Present() {
-		args = append(args, c.Args().Slice()...)
-	} else {
+	if !c.Args().Present() {
 		args = append(args, "switch")
 	}
 	return utils.ExecWithStdio(c, "sudo", append(args, c.Args().Slice()...))
@@ -87,6 +87,11 @@ func rebuildAction(ctx context.Context, c *cli.Command) error {
 func buildConfirm(c *cli.Command, args []string) error {
 	// setup a temp dir to not pollute cwd with result/
 	tmpdir, err := os.MkdirTemp(os.TempDir(), "rebuild-")
+	defer func() {
+		if err := os.RemoveAll(tmpdir); err != nil {
+			slog.Warn("Failed to clean up temp build dir", "err", err)
+		}
+	}()
 	if err != nil {
 		return fmt.Errorf("couldn't make temp dir for build: %w", err)
 	}
@@ -97,7 +102,7 @@ func buildConfirm(c *cli.Command, args []string) error {
 
 	nvd, err := exec.LookPath("nvd")
 	if err != nil {
-		return fmt.Errorf("%w: nvd tool must be installed for diffs", errToolMissing)
+		return fmt.Errorf("nvd tool must be installed for diffs: %w ", errToolMissing)
 	}
 
 	if err := utils.ExecWithStdio(c, "sudo", append(args, "build")); err != nil {

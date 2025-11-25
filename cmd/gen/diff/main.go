@@ -1,3 +1,4 @@
+// Package diff implements the "diff" command for comparing two system generations.
 package diff
 
 import (
@@ -25,10 +26,10 @@ var Command = &cli.Command{
 func buildAction(ctx context.Context, c *cli.Command) error {
 	nvd, err := exec.LookPath("nvd")
 	if err != nil {
-		return fmt.Errorf("%w: nvd tool must be installed for diffs", errToolMissing)
+		return fmt.Errorf("nvd tool must be installed for diffs: %w", errToolMissing)
 	}
 	if c.Args().Len() != 2 {
-		return fmt.Errorf("%w: you must provide 2 argument, from and to generation", errArgMissing)
+		return fmt.Errorf("you must provide 2 argument, from and to generation: %w", errArgMissing)
 	}
 	return utils.ExecWithStdio(c, nvd, []string{
 		"diff",

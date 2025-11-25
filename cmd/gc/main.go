@@ -1,3 +1,4 @@
+// Package gc does simple garbage collection for Nix
 package gc
 
 import (

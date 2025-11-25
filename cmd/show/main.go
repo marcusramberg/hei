@@ -1,3 +1,4 @@
+// Package show implements the 'show' command to show your nix flake info
 package show
 
 import (

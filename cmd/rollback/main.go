@@ -1,3 +1,4 @@
+// Package rollback implements the rollback command for nixos.
 package rollback
 
 import (

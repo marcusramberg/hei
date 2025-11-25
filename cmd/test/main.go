@@ -1,3 +1,4 @@
+// Package test implements the "hei test" command. It optionally lets you run interactive tests
 package test
 
 import (
@@ -29,7 +30,7 @@ func testAction(ctx context.Context, c *cli.Command) error {
 	flake := utils.GetFlake(c)
 	if c.Bool("interactive") {
 		if c.Args().Len() != 1 {
-			return fmt.Errorf("%w,takes one argument, the nix test to run", errArgMissing)
+			return fmt.Errorf("takes one argument, the nix test to run: %w", errArgMissing)
 		}
 		err := utils.ExecWithStdio(c, "nix", []string{"build", fmt.Sprintf("%s#%s.driverInteractive", flake, c.Args().First())})
 		if err != nil {

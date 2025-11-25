@@ -1,3 +1,4 @@
+// Package p is a simple shortcut for nix profile commands
 package p
 
 import (

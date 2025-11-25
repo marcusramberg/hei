@@ -1,3 +1,4 @@
+// Package search allows you to search for packages in nixpkgs
 package search
 
 import (

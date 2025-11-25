@@ -1,3 +1,4 @@
+// Package deletegen implements the 'delete' command to delete Nix generations
 package deletegen
 
 import (
@@ -20,7 +21,7 @@ var Command = &cli.Command{
 
 func delAction(ctx context.Context, c *cli.Command) error {
 	if c.Args().Len() != 1 {
-		return fmt.Errorf("%w: you must provide 1 argument, the generation to delete", errArgMissing)
+		return fmt.Errorf("you must provide 1 argument, the generation to delete: %w", errArgMissing)
 	}
 	return utils.ExecWithStdio(c, "sudo", []string{"nix-env", "--delete-generations", "--profile", "/nix/var/nix/profiles/system", c.Args().Get(0)})
 }

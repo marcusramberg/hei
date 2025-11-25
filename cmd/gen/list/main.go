@@ -1,3 +1,4 @@
+// Package list implements the 'gen list' command to list Nix generations.
 package list
 
 import (
