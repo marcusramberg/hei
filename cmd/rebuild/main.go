@@ -1,12 +1,19 @@
 package rebuild
 
 import (
+	"bufio"
 	"context"
+	"errors"
+	"fmt"
+	"os"
+	"os/exec"
 	"runtime"
 
 	"code.bas.es/marcus/hei/utils"
 	"github.com/urfave/cli/v3"
 )
+
+var errToolMissing = errors.New("nvd tool must be installed for diffs")
 
 var Command = &cli.Command{
 	Name:      "rebuild",
@@ -32,6 +39,11 @@ var Command = &cli.Command{
 			Name:    "update",
 			Aliases: []string{"u"},
 			Usage:   "Pull on nix flake before rebuilding",
+		},
+		&cli.BoolFlag{
+			Name:    "confirm",
+			Aliases: []string{"c"},
+			Usage:   "Run a diff and confirm before switching",
 		},
 	},
 	Action: rebuildAction,
@@ -60,10 +72,48 @@ func rebuildAction(ctx context.Context, c *cli.Command) error {
 	if c.Bool("offline") {
 		args = append(args, "--option", "substitute", "false")
 	}
+	if c.Bool("confirm") {
+		return buildConfirm(c, args)
+	}
+
 	if c.Args().Present() {
 		args = append(args, c.Args().Slice()...)
 	} else {
 		args = append(args, "switch")
 	}
 	return utils.ExecWithStdio(c, "sudo", append(args, c.Args().Slice()...))
+}
+
+func buildConfirm(c *cli.Command, args []string) error {
+	// setup a temp dir to not pollute cwd with result/
+	tmpdir, err := os.MkdirTemp(os.TempDir(), "rebuild-")
+	if err != nil {
+		return fmt.Errorf("couldn't make temp dir for build: %w", err)
+	}
+
+	if err = os.Chdir(tmpdir); err != nil {
+		return err
+	}
+
+	nvd, err := exec.LookPath("nvd")
+	if err != nil {
+		return fmt.Errorf("%w: nvd tool must be installed for diffs", errToolMissing)
+	}
+
+	if err := utils.ExecWithStdio(c, "sudo", append(args, "build")); err != nil {
+		return err
+	}
+
+	if err := utils.ExecWithStdio(c, nvd, []string{"diff", "/nix/var/nix/profiles/system", "result"}); err != nil {
+		return err
+	}
+
+	fmt.Println("Press Enter to confirm the switch or ctrl-c to abort...")
+	reader := bufio.NewReader(os.Stdin)
+	_, err = reader.ReadString('\n')
+	if err != nil {
+		return err
+	}
+
+	return utils.ExecWithStdio(c, "sudo", append(args, "switch"))
 }
