@@ -115,9 +115,13 @@ func buildConfirm(c *cli.Command, args []string) error {
 
 	fmt.Println("Press Enter to confirm the switch or ctrl-c to abort...")
 	reader := bufio.NewReader(os.Stdin)
-	_, err = reader.ReadString('\n')
-	if err != nil {
-		return err
+	if !c.Bool("dry-run") {
+		_, err = reader.ReadString('\n')
+		if err != nil {
+			return err
+		}
+	} else {
+		fmt.Println("(dry-run mode, not waiting for confirmation)")
 	}
 
 	return utils.ExecWithStdio(c, "sudo", append(args, "switch"))

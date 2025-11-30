@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	"log"
+	"log/slog"
 	"os"
 
 	"code.bas.es/marcus/hei/cmd/build"
@@ -27,6 +27,7 @@ import (
 var Version string = "dev"
 
 func main() {
+	slog.SetDefault(slog.New(slog.NewTextHandler(os.Stderr, nil)))
 	run(os.Args)
 }
 
@@ -46,7 +47,7 @@ func run(args []string) {
 	hei.Flags = setupFlags()
 
 	if err := hei.Run(context.Background(), args); err != nil {
-		log.Fatalf("error: %v", err)
+		slog.Error("command failed:", "err", err)
 	}
 }
 
