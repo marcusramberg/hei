@@ -51,3 +51,17 @@ func ExecWithStdio(c *cli.Command, cmd string, args []string) error {
 
 	return nil
 }
+
+func ExecGetOutput(c *cli.Command, cmd string, args []string) ([]byte, error) {
+	if c.Bool("dry-run") {
+		slog.Info("dry-run:", "cmd", cmd, "args", args)
+		return nil, nil
+	}
+	ec := exec.CommandContext(context.Background(), cmd, args...)
+	out, err := ec.Output()
+	if err != nil {
+		return nil, err
+	}
+
+	return out, nil
+}

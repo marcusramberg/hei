@@ -3,6 +3,7 @@ package list
 
 import (
 	"context"
+	"log/slog"
 
 	"code.bas.es/marcus/hei/utils"
 	"github.com/urfave/cli/v3"
@@ -11,9 +12,15 @@ import (
 var Command = &cli.Command{
 	Name:   "list",
 	Usage:  "List nix generations",
-	Action: switchAction,
+	Action: listAction,
 }
 
-func switchAction(ctx context.Context, c *cli.Command) error {
-	return utils.ExecWithStdio(c, "sudo", []string{"nix-env", "--list-generations", "--profile", "/nix/var/nix/profiles/system"})
+func listAction(ctx context.Context, c *cli.Command) error {
+	j, err := utils.ListGenerations(c)
+	if err != nil {
+		return err
+	}
+	slog.Info("Listed generations", "count", len(*j))
+	utils.PrintGenerations(*j)
+	return nil
 }
