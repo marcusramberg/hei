@@ -3,20 +3,21 @@ package upgrade
 
 import (
 	"context"
-	"errors"
-	"fmt"
 
+	"code.bas.es/marcus/hei/utils"
 	"github.com/urfave/cli/v3"
 )
 
-var errDeprecated = errors.New("deprecated")
-
 var Command = &cli.Command{
 	Name:   "upgrade",
-	Usage:  "deprecated, use rebuild -u instead",
+	Usage:  "update all flake inputs and rebuild the system",
 	Action: upgradeAction,
 }
 
 func upgradeAction(ctx context.Context, c *cli.Command) error {
-	return fmt.Errorf("use rebuild -u instead: %w", errDeprecated)
+	flake := utils.GetFlake(c)
+	if err := utils.ExecWithStdio(c, "nix", append([]string{"flake", "update", "-f", flake}, c.Args().Slice()...)); err != nil {
+		return err
+	}
+	return utils.ExecWithStdio(c, "hei", append([]string{"rebuild", "-f", flake}, c.Args().Slice()...))
 }
