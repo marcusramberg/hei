@@ -3,7 +3,6 @@ package repl
 
 import (
 	"context"
-	"fmt"
 
 	"code.bas.es/marcus/hei/utils"
 	"github.com/urfave/cli/v3"
@@ -18,5 +17,5 @@ var Command = &cli.Command{
 
 func replAction(ctx context.Context, c *cli.Command) error {
 	flake := utils.GetFlake(c)
-	return utils.ExecWithStdio(c, "nix", []string{"repl", "--file", fmt.Sprintf("%s/flake.nix", flake)})
+	return utils.ExecWithStdio(c, "nix", []string{"repl", flake})
 }
