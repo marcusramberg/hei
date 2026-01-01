@@ -134,6 +134,7 @@ func TestCommands(t *testing.T) {
 			name:          "build",
 			args:          []string{"hei", "-d", "-f", ".", "build"},
 			expectedLines: 1,
+			expectedCmd:   "nom",
 			expectedArgs:  []string{"build", "."},
 		},
 		{

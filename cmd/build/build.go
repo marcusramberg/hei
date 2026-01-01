@@ -18,11 +18,17 @@ var Command = &cli.Command{
 }
 
 func buildAction(ctx context.Context, c *cli.Command) error {
-	builder, err := exec.LookPath("nom")
-	if err != nil {
-		builder, err = exec.LookPath("nix")
+	var builder string
+	var err error
+	if c.Bool("dry-run") {
+		builder = "nom"
+	} else {
+		builder, err = exec.LookPath("nom")
 		if err != nil {
-			return fmt.Errorf("cannot build, neither 'nom' nor 'nix' found in PATH: %w", err)
+			builder, err = exec.LookPath("nix")
+			if err != nil {
+				return fmt.Errorf("cannot build, neither 'nom' nor 'nix' found in PATH: %w", err)
+			}
 		}
 	}
 	if c.Args().Present() {
