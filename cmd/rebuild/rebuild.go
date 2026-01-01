@@ -86,14 +86,13 @@ func rebuildAction(ctx context.Context, c *cli.Command) error {
 		case "--confirm", "-c":
 			confirm = true
 		default:
-			if strings.HasPrefix(arg, "-") {
+			switch {
+			case strings.HasPrefix(arg, "-"):
 				extraFlags = append(extraFlags, arg)
-			} else if isKnownAction(arg) {
+			case isKnownAction(arg):
 				explicitActions = append(explicitActions, arg)
 				actionSeen = true
-			} else {
-				// profound heuristic: if it's not a flag and not a known action,
-				// it's probably an argument to a flag (e.g. --build-host <host>)
+			default:
 				extraFlags = append(extraFlags, arg)
 			}
 		}
