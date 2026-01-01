@@ -15,7 +15,7 @@ import (
 
 var defaultFlakePaths = []string{"/etc/nixos", "~/.config/nix-darwin", "~/.config/nix-config"}
 
-func expandHome(path string) string {
+func ExpandHome(path string) string {
 	if len(path) == 0 || path[0] != '~' {
 		return path
 	}
@@ -34,7 +34,7 @@ func expandHome(path string) string {
 
 func GetFlake(c *cli.Command) string {
 	candidates := defaultFlakePaths
-	flake := expandHome(c.String("flake"))
+	flake := ExpandHome(c.String("flake"))
 	if flake != "" {
 		s, err := os.Stat(fmt.Sprintf("%s/flake.nix", flake))
 		if err == nil && !s.IsDir() {
@@ -43,7 +43,7 @@ func GetFlake(c *cli.Command) string {
 		log.Fatalf("Provided flake path is invalid: %s", flake)
 	}
 	for _, flake := range defaultFlakePaths {
-		flake = expandHome(flake)
+		flake = ExpandHome(flake)
 		s, err := os.Stat(fmt.Sprintf("%s/flake.nix", flake))
 		if err == nil && !s.IsDir() {
 			log.Printf("Using flake: %s", flake)

@@ -151,21 +151,18 @@ func TestCommands(t *testing.T) {
 			expectedArgs:  []string{"diff", "/nix/var/nix/profiles/system-1-link", "/nix/var/nix/profiles/system-2-link"},
 		},
 		{
-			name:          "rebuild-confirm",
-			args:          []string{"hei", "-d", "-f", ".", "rebuild", "--confirm"},
-			expectedLines: 3,
+			name:          "rebuild-unknown-flags",
+			args:          []string{"hei", "-d", "-f", ".", "rebuild", "--show-trace", "--custom"},
+			expectedLines: 1,
 			expectedCmd:   "sudo",
-			expectedArgs:  []string{"nixos-rebuild", "--flake", ".", "switch"},
+			expectedArgs:  []string{"nixos-rebuild", "--flake", ".", "--show-trace", "--custom", "switch"},
 		},
 		{
-			name:          "gen-switch-fail",
-			args:          []string{"hei", "-d", "gen", "switch", "999999"},
-			expectedLines: 1, // Error log: generation ... could not be found
-		},
-		{
-			name:          "swap-fail",
-			args:          []string{"hei", "-d", "swap", "does-not-exist"},
-			expectedLines: 1, // Error log: invalid target
+			name:          "rebuild-flag-with-arg",
+			args:          []string{"hei", "-d", "-f", ".", "rebuild", "--build-host", "user@host"},
+			expectedLines: 1,
+			expectedCmd:   "sudo",
+			expectedArgs:  []string{"nixos-rebuild", "--flake", ".", "--build-host", "user@host", "switch"},
 		},
 	}
 

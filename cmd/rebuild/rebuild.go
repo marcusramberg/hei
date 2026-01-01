@@ -10,6 +10,7 @@ import (
 	"os"
 	"os/exec"
 	"runtime"
+	"strings"
 
 	"code.bas.es/marcus/hei/utils"
 	"github.com/urfave/cli/v3"
@@ -18,14 +19,14 @@ import (
 var errToolMissing = errors.New("nvd tool must be installed for diffs")
 
 var Command = &cli.Command{
-	Name:      "rebuild",
-	ArgsUsage: "<[switch|boot|..]> - defaults to switch",
-	Usage:     "Rebuild your nix configuration",
+	Name:            "rebuild",
+	ArgsUsage:       "<[switch|boot|..]> - defaults to switch",
+	Usage:           "Rebuild your nix configuration",
+	SkipFlagParsing: true,
 	Flags: []cli.Flag{
 		&cli.BoolFlag{
-			Name:    "fast",
-			Aliases: []string{"f"},
-			Usage:   "Build in fast mode",
+			Name:  "fast",
+			Usage: "Build in fast mode",
 		},
 		&cli.BoolFlag{
 			Name:    "offline",
@@ -52,36 +53,114 @@ var Command = &cli.Command{
 }
 
 func rebuildAction(ctx context.Context, c *cli.Command) error {
-	flake := utils.GetFlake(c)
-	if c.Bool("update") {
+	var (
+		flake           string
+		fast            bool
+		offline         bool
+		rollback        bool
+		update          bool
+		confirm         bool
+		extraFlags      []string
+		explicitActions []string
+		actionSeen      bool
+	)
+
+	// Manual argument parsing
+	args := c.Args().Slice()
+	for i := 0; i < len(args); i++ {
+		arg := args[i]
+		switch arg {
+		case "--flake", "-f":
+			if i+1 < len(args) {
+				flake = args[i+1]
+				i++
+			}
+		case "--fast":
+			fast = true
+		case "--offline", "-o":
+			offline = true
+		case "--rollback", "-r":
+			rollback = true
+		case "--update", "-u":
+			update = true
+		case "--confirm", "-c":
+			confirm = true
+		default:
+			if strings.HasPrefix(arg, "-") {
+				extraFlags = append(extraFlags, arg)
+			} else if isKnownAction(arg) {
+				explicitActions = append(explicitActions, arg)
+				actionSeen = true
+			} else {
+				// profound heuristic: if it's not a flag and not a known action,
+				// it's probably an argument to a flag (e.g. --build-host <host>)
+				extraFlags = append(extraFlags, arg)
+			}
+		}
+	}
+
+	// Resolve flake
+	if flake == "" {
+		flake = utils.GetFlake(c)
+	} else {
+		flake = utils.ExpandHome(flake)
+	}
+
+	if update {
 		if err := utils.ExecWithStdio(c, "git", []string{"-C", flake, "pull"}); err != nil {
 			return err
 		}
 	}
 
-	args := []string{"nixos-rebuild"}
+	cmdArgs := []string{"nixos-rebuild"}
 	if runtime.GOOS == "darwin" {
-		args = []string{"darwin-rebuild"}
+		cmdArgs = []string{"darwin-rebuild"}
 	}
-	args = append(args, "--flake", flake)
+	cmdArgs = append(cmdArgs, "--flake", flake)
 
-	if c.Bool("rollback") {
-		args = append(args, "--rollback")
+	if rollback {
+		cmdArgs = append(cmdArgs, "--rollback")
 	}
-	if c.Bool("fast") {
-		args = append(args, "--fast")
+	if fast {
+		cmdArgs = append(cmdArgs, "--fast")
 	}
-	if c.Bool("offline") {
-		args = append(args, "--option", "substitute", "false")
-	}
-	if c.Bool("confirm") {
-		return buildConfirm(c, args)
+	if offline {
+		cmdArgs = append(cmdArgs, "--option", "substitute", "false")
 	}
 
-	if !c.Args().Present() {
-		args = append(args, "switch")
+	cmdArgs = append(cmdArgs, extraFlags...)
+
+	if confirm {
+		return buildConfirm(c, cmdArgs)
 	}
-	return utils.ExecWithStdio(c, "sudo", append(args, c.Args().Slice()...))
+
+	cmdArgs = append(cmdArgs, explicitActions...)
+
+	if !actionSeen {
+		cmdArgs = append(cmdArgs, "switch")
+	}
+
+	return utils.ExecWithStdio(c, "sudo", cmdArgs)
+}
+
+var knownActions = map[string]bool{
+	"switch":                   true,
+	"boot":                     true,
+	"test":                     true,
+	"build":                    true,
+	"dry-build":                true,
+	"dry-activate":             true,
+	"edit":                     true,
+	"repl":                     true,
+	"list-generations":         true,
+	"build-vm":                 true,
+	"build-vm-with-bootloader": true,
+	"changelog":                true, // darwin
+	"check":                    true, // darwin
+}
+
+func isKnownAction(s string) bool {
+	return knownActions[s]
 }
 
 func buildConfirm(c *cli.Command, args []string) error {
