@@ -41,7 +41,7 @@ func PrintGenerations(gens []Generation) {
 	for g := len(gens) - 1; g >= 0; g-- {
 		isCurrent := ""
 		if gens[g].Current {
-			isCurrent = "(*)"
+			isCurrent = " ⇇"
 		}
 		fmt.Fprintf(w, "%d%s\t%s\t%s\t%s\n", gens[g].Generation, isCurrent, gens[g].RelativeAge(), gens[g].NixosVersion, gens[g].KernelVersion)
 	}
