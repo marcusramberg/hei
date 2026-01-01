@@ -22,6 +22,7 @@ func TestCommands(t *testing.T) {
 		expectedLines int
 		expectedCmd   string
 		expectedArgs  []string
+		checkFirst    bool
 	}{
 		{
 			name:          "rebuild",
@@ -51,6 +52,121 @@ func TestCommands(t *testing.T) {
 			expectedCmd:   "sudo",
 			expectedArgs:  []string{"nix-env", "--delete-generations", "old", "--profile", "/nix/var/nix/profiles/system"},
 		},
+		{
+			name:          "check",
+			args:          []string{"hei", "-d", "-f", ".", "check"},
+			expectedLines: 1,
+			expectedCmd:   "nix",
+			expectedArgs:  []string{"flake", "check", "."},
+		},
+		{
+			name:          "update",
+			args:          []string{"hei", "-d", "-f", ".", "update"},
+			expectedLines: 1,
+			expectedCmd:   "nix",
+			expectedArgs:  []string{"flake", "update", "--flake", "."},
+		},
+		{
+			name:          "update-pull",
+			args:          []string{"hei", "-d", "-f", ".", "update", "--pull"},
+			expectedLines: 2,
+			expectedCmd:   "nix",
+			expectedArgs:  []string{"flake", "update", "--flake", "."},
+		},
+		{
+			name:          "gen-list",
+			args:          []string{"hei", "-d", "gen", "list"},
+			expectedLines: 2,
+			expectedCmd:   "nixos-rebuild",
+			expectedArgs:  []string{"list-generations", "--json"},
+			checkFirst:    true,
+		},
+		{
+			name:          "gen-delete",
+			args:          []string{"hei", "-d", "gen", "delete", "42"},
+			expectedLines: 1,
+			expectedCmd:   "sudo",
+			expectedArgs:  []string{"nix-env", "--delete-generations", "--profile", "/nix/var/nix/profiles/system", "42"},
+		},
+		{
+			name:          "search",
+			args:          []string{"hei", "-d", "search", "hello"},
+			expectedLines: 1,
+			expectedCmd:   "nix",
+			expectedArgs:  []string{"search", "nixpkgs", "hello"},
+		},
+		{
+			name:          "rollback",
+			args:          []string{"hei", "-d", "-f", ".", "rollback"},
+			expectedLines: 1,
+			expectedCmd:   "sudo",
+			expectedArgs:  []string{"nixos-rebuild", "--rollback", "--flake", ".", "switch"},
+		},
+		{
+			name:          "upgrade",
+			args:          []string{"hei", "-d", "-f", ".", "upgrade"},
+			expectedLines: 2,
+			expectedCmd:   "sudo",
+			expectedArgs:  []string{"nixos-rebuild", "--flake", ".", "switch"},
+		},
+		{
+			name:          "repl",
+			args:          []string{"hei", "-d", "-f", ".", "repl"},
+			expectedLines: 1,
+			expectedCmd:   "nix",
+			expectedArgs:  []string{"repl", "."},
+		},
+		{
+			name:          "p",
+			args:          []string{"hei", "-d", "p", "list"},
+			expectedLines: 1,
+			expectedCmd:   "nix",
+			expectedArgs:  []string{"profile", "list"},
+		},
+		{
+			name:          "test-simple",
+			args:          []string{"hei", "-d", "-f", ".", "test", "mytest"},
+			expectedLines: 1,
+			expectedCmd:   "nom",
+			expectedArgs:  []string{"build", ".#mytest"},
+		},
+		{
+			name:          "build",
+			args:          []string{"hei", "-d", "-f", ".", "build"},
+			expectedLines: 1,
+			expectedArgs:  []string{"build", "."},
+		},
+		{
+			name:          "ssh",
+			args:          []string{"hei", "-d", "ssh", "myhost", "show"},
+			expectedLines: 1,
+			expectedCmd:   "ssh",
+			expectedArgs:  []string{"myhost", "hei", "show"},
+		},
+		{
+			name:          "gen-diff",
+			args:          []string{"hei", "-d", "gen", "diff", "1", "2"},
+			expectedLines: 1,
+			expectedCmd:   "nvd",
+			expectedArgs:  []string{"diff", "/nix/var/nix/profiles/system-1-link", "/nix/var/nix/profiles/system-2-link"},
+		},
+		{
+			name:          "rebuild-confirm",
+			args:          []string{"hei", "-d", "-f", ".", "rebuild", "--confirm"},
+			expectedLines: 3,
+			expectedCmd:   "sudo",
+			expectedArgs:  []string{"nixos-rebuild", "--flake", ".", "switch"},
+		},
+		{
+			name:          "gen-switch-fail",
+			args:          []string{"hei", "-d", "gen", "switch", "999999"},
+			expectedLines: 1, // Error log: generation ... could not be found
+		},
+		{
+			name:          "swap-fail",
+			args:          []string{"hei", "-d", "swap", "does-not-exist"},
+			expectedLines: 1, // Error log: invalid target
+		},
 	}
 
 	for _, tt := range tests {
@@ -62,12 +178,18 @@ func TestCommands(t *testing.T) {
 			if len(jsonLogs) != tt.expectedLines {
 				t.Fatalf("expected %d log line, got: %d", tt.expectedLines, len(jsonLogs))
 			}
-			lastLog := jsonLogs[len(jsonLogs)-1]
-			if tt.expectedCmd != "" && lastLog.Cmd != tt.expectedCmd {
-				t.Errorf("expected cmd to be %q, got: %s", tt.expectedCmd, jsonLogs[0].Cmd)
+			if tt.expectedLines == 0 {
+				return
 			}
-			if !slices.Equal(lastLog.Args, tt.expectedArgs) {
-				t.Errorf("expected args to be %v, got: %v", tt.expectedArgs, jsonLogs[0].Args)
+			logToCheck := jsonLogs[len(jsonLogs)-1]
+			if tt.checkFirst {
+				logToCheck = jsonLogs[0]
+			}
+			if tt.expectedCmd != "" && logToCheck.Cmd != tt.expectedCmd {
+				t.Errorf("expected cmd to be %q, got: %s", tt.expectedCmd, logToCheck.Cmd)
+			}
+			if !slices.Equal(logToCheck.Args, tt.expectedArgs) {
+				t.Errorf("expected args to be %v, got: %v", tt.expectedArgs, logToCheck.Args)
 			}
 		})
 	}

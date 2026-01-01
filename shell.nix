@@ -22,5 +22,6 @@ pkgs.mkShell {
     goEnv
     gomod2nix
     pkgs.delve
+    pkgs.nvd
   ];
 }

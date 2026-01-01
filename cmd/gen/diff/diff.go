@@ -24,9 +24,15 @@ var Command = &cli.Command{
 }
 
 func buildAction(ctx context.Context, c *cli.Command) error {
-	nvd, err := exec.LookPath("nvd")
-	if err != nil {
-		return fmt.Errorf("nvd tool must be installed for diffs: %w", errToolMissing)
+	var nvd string
+	var err error
+	if c.Bool("dry-run") {
+		nvd = "nvd"
+	} else {
+		nvd, err = exec.LookPath("nvd")
+		if err != nil {
+			return fmt.Errorf("nvd tool must be installed for diffs: %w", errToolMissing)
+		}
 	}
 	if c.Args().Len() != 2 {
 		return fmt.Errorf("you must provide 2 argument, from and to generation: %w", errArgMissing)

@@ -26,6 +26,9 @@ func ListGenerations(c *cli.Command) (*[]Generation, error) {
 	if err != nil {
 		return nil, err
 	}
+	if out == nil {
+		return &[]Generation{}, nil
+	}
 	if err := json.Unmarshal(out, &res); err != nil {
 		return nil, err
 	}

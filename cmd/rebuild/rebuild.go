@@ -100,9 +100,14 @@ func buildConfirm(c *cli.Command, args []string) error {
 		return err
 	}
 
-	nvd, err := exec.LookPath("nvd")
-	if err != nil {
-		return fmt.Errorf("nvd tool must be installed for diffs%w ", errToolMissing)
+	var nvd string
+	if c.Bool("dry-run") {
+		nvd = "nvd"
+	} else {
+		nvd, err = exec.LookPath("nvd")
+		if err != nil {
+			return fmt.Errorf("nvd tool must be installed for diffs%w ", errToolMissing)
+		}
 	}
 
 	if err := utils.ExecWithStdio(c, "sudo", append(args, "build")); err != nil {

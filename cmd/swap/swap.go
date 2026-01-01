@@ -33,8 +33,30 @@ func swapAction(ctx context.Context, c *cli.Command) error {
 	if !c.Args().Present() {
 		return fmt.Errorf("must specify targets to swap: %w", errArgMissing)
 	}
+
+	dryRun := c.Bool("dry-run")
+
+	// Define walker function to capture dryRun flag
+	var walkFn func(path string, info os.FileInfo, err error) error
+	walkFn = func(path string, info os.FileInfo, err error) error {
+		if strings.HasSuffix(path, backupSuffix) {
+			return nil
+		}
+		if err != nil {
+			return fmt.Errorf("invalid target %s: %w", path, err)
+		}
+		if info.IsDir() {
+			return nil
+		}
+		backup := fmt.Sprintf("%s%s", path, backupSuffix)
+		if info.Mode()&fs.ModeSymlink == 0 {
+			return restoreBackup(path, backup, dryRun)
+		}
+		return swapFile(path, backup, dryRun)
+	}
+
 	for _, t := range c.Args().Slice() {
-		err := filepath.Walk(t, recurseAndSwap)
+		err := filepath.Walk(t, walkFn)
 		if err != nil {
 			return err
 		}
@@ -42,24 +64,11 @@ func swapAction(ctx context.Context, c *cli.Command) error {
 	return nil
 }
 
-func recurseAndSwap(path string, info os.FileInfo, err error) error {
-	if strings.HasSuffix(path, backupSuffix) {
+func swapFile(path, backup string, dryRun bool) error {
+	if dryRun {
+		slog.Info("dry-run: swapping file", "path", path, "backup", backup)
 		return nil
 	}
-	if err != nil {
-		return fmt.Errorf("invalid target %s: %w", path, err)
-	}
-	if info.IsDir() {
-		return nil
-	}
-	backup := fmt.Sprintf("%s%s", path, backupSuffix)
-	if info.Mode()&fs.ModeSymlink == 0 {
-		return restoreBackup(path, backup)
-	}
-	return swapFile(path, backup)
-}
-
-func swapFile(path, backup string) error {
 	target, err := filepath.EvalSymlinks(path)
 	if err != nil {
 		return fmt.Errorf("failed to resolve symlink for %s: %w", path, err)
@@ -80,7 +89,11 @@ func swapFile(path, backup string) error {
 	return nil
 }
 
-func restoreBackup(path, backup string) error {
+func restoreBackup(path, backup string, dryRun bool) error {
+	if dryRun {
+		slog.Info("dry-run: restoring backup", "path", path, "backup", backup)
+		return nil
+	}
 	b, err := os.Lstat(backup)
 	if err != nil {
 		return fmt.Errorf("file %s found, and no backup to restore. Bailing out: %w", path, err)
