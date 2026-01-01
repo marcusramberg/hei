@@ -35,7 +35,7 @@ func gcAction(ctx context.Context, c *cli.Command) error {
 		if err := utils.ExecWithStdio(c, "sudo", []string{"nix-store", "--optimize"}); err != nil {
 			return err
 		}
-		if err := utils.ExecWithStdio(c, "sudo", []string{"nix-env", "--delete-generations old", "--profile", "/nix/var/nix/profiles/system"}); err != nil {
+		if err := utils.ExecWithStdio(c, "sudo", []string{"nix-env", "--delete-generations", "old", "--profile", "/nix/var/nix/profiles/system"}); err != nil {
 			return err
 		}
 	}

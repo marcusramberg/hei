@@ -8,15 +8,33 @@ import (
 	"log/slog"
 	"os"
 	"os/exec"
+	"path/filepath"
 
 	"github.com/urfave/cli/v3"
 )
 
 var defaultFlakePaths = []string{"/etc/nixos", "~/.config/nix-darwin", "~/.config/nix-config"}
 
+func expandHome(path string) string {
+	if len(path) == 0 || path[0] != '~' {
+		return path
+	}
+
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return path
+	}
+
+	if len(path) == 1 {
+		return home
+	}
+
+	return filepath.Join(home, path[1:])
+}
+
 func GetFlake(c *cli.Command) string {
 	candidates := defaultFlakePaths
-	flake := c.String("flake")
+	flake := expandHome(c.String("flake"))
 	if flake != "" {
 		s, err := os.Stat(fmt.Sprintf("%s/flake.nix", flake))
 		if err == nil && !s.IsDir() {
@@ -25,6 +43,7 @@ func GetFlake(c *cli.Command) string {
 		log.Fatalf("Provided flake path is invalid: %s", flake)
 	}
 	for _, flake := range defaultFlakePaths {
+		flake = expandHome(flake)
 		s, err := os.Stat(fmt.Sprintf("%s/flake.nix", flake))
 		if err == nil && !s.IsDir() {
 			log.Printf("Using flake: %s", flake)

@@ -14,8 +14,8 @@ var Command = &cli.Command{
 	Usage:     "Update the given flake paths or the default ones if none are provided",
 	Flags: []cli.Flag{
 		&cli.BoolFlag{
-			Name:    "update",
-			Aliases: []string{"u"},
+			Name:    "pull",
+			Aliases: []string{"p"},
 			Usage:   "Do 'git pull' before updating the flake",
 		},
 	},

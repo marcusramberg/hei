@@ -19,7 +19,7 @@ var (
 var Command = &cli.Command{
 	Name:      "diff",
 	ArgsUsage: "[gen1] [gen2]",
-	Usage:     "Build the given flake paths or the default ones if none are provided",
+	Usage:     "Diff two generations",
 	Action:    buildAction,
 }
 

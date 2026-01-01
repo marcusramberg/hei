@@ -44,6 +44,13 @@ func TestCommands(t *testing.T) {
 			expectedCmd:   "nix",
 			expectedArgs:  []string{"flake", "show", "."},
 		},
+		{
+			name:          "gc-system",
+			args:          []string{"hei", "-d", "gc", "--system"},
+			expectedLines: 3,
+			expectedCmd:   "sudo",
+			expectedArgs:  []string{"nix-env", "--delete-generations", "old", "--profile", "/nix/var/nix/profiles/system"},
+		},
 	}
 
 	for _, tt := range tests {

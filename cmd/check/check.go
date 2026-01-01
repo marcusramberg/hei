@@ -10,7 +10,7 @@ import (
 
 var Command = &cli.Command{
 	Name:      "check",
-	ArgsUsage: "[flaKe-path]",
+	ArgsUsage: "[flake-path]",
 	Usage:     "Run checks on the given flake paths or the default ones if none are provided",
 	Action:    checkAction,
 }
