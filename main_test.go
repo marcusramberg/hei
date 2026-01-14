@@ -15,7 +15,7 @@ type slogLine struct {
 	Cmd  string   `json:"cmd"`
 }
 
-func TestCommands(t *testing.T) {
+func TestCommands(t *testing.T) { //nolint:paralleltest // modifies global slog state
 	tests := []struct {
 		name          string
 		args          []string
@@ -174,7 +174,7 @@ func TestCommands(t *testing.T) {
 		},
 	}
 
-	for _, tt := range tests {
+	for _, tt := range tests { //nolint:paralleltest // subtests share global slog state
 		t.Run(tt.name, func(t *testing.T) {
 			t.Logf("Testing command: %v", tt.args)
 			jsonLogs := captureStderr(t, func() {

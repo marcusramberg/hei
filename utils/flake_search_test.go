@@ -9,7 +9,7 @@ import (
 	"github.com/urfave/cli/v3"
 )
 
-func TestGetFlake_Search(t *testing.T) {
+func TestGetFlake_Search(t *testing.T) { //nolint:paralleltest // modifies global defaultFlakePaths
 	// Create a temp directory to simulate a flake location
 	tmpDir, err := os.MkdirTemp("", "hei-flake-test")
 	if err != nil {
@@ -18,7 +18,7 @@ func TestGetFlake_Search(t *testing.T) {
 	defer os.RemoveAll(tmpDir)
 
 	// Create flake.nix inside
-	if err := os.WriteFile(filepath.Join(tmpDir, "flake.nix"), []byte("{}"), 0644); err != nil {
+	if err := os.WriteFile(filepath.Join(tmpDir, "flake.nix"), []byte("{}"), 0600); err != nil {
 		t.Fatal(err)
 	}
 

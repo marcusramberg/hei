@@ -7,6 +7,7 @@ import (
 )
 
 func TestExpandHome(t *testing.T) {
+	t.Parallel()
 	home, err := os.UserHomeDir()
 	if err != nil {
 		t.Skip("Could not get user home directory")
@@ -41,6 +42,7 @@ func TestExpandHome(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 			got := ExpandHome(tt.input)
 			if got != tt.expected {
 				t.Errorf("ExpandHome(%q) = %q, want %q", tt.input, got, tt.expected)

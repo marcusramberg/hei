@@ -37,8 +37,7 @@ func swapAction(ctx context.Context, c *cli.Command) error {
 	dryRun := c.Bool("dry-run")
 
 	// Define walker function to capture dryRun flag
-	var walkFn func(path string, info os.FileInfo, err error) error
-	walkFn = func(path string, info os.FileInfo, err error) error {
+	walkFn := func(path string, info os.FileInfo, err error) error {
 		if strings.HasSuffix(path, backupSuffix) {
 			return nil
 		}
