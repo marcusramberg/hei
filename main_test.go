@@ -89,6 +89,13 @@ func TestCommands(t *testing.T) {
 			expectedArgs:  []string{"nix-env", "--delete-generations", "--profile", "/nix/var/nix/profiles/system", "42"},
 		},
 		{
+			name:          "gen-delete-range",
+			args:          []string{"hei", "-d", "gen", "delete", "10-15"},
+			expectedLines: 1,
+			expectedCmd:   "sudo",
+			expectedArgs:  []string{"nix-env", "--delete-generations", "--profile", "/nix/var/nix/profiles/system", "10", "11", "12", "13", "14", "15"},
+		},
+		{
 			name:          "search",
 			args:          []string{"hei", "-d", "search", "hello"},
 			expectedLines: 1,
