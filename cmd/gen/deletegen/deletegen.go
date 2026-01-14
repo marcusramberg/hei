@@ -17,6 +17,7 @@ var errInvalidRange = errors.New("invalid range format")
 
 var Command = &cli.Command{
 	Name:      "delete",
+	Aliases:   []string{"rm"},
 	ArgsUsage: "[gen] or [start-end]",
 	Usage:     "Delete the specified generation(s). Supports single gen (42) or range (10-15)",
 	Action:    delAction,
