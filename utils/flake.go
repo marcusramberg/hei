@@ -3,6 +3,7 @@ package utils
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
 	"log/slog"
@@ -83,4 +84,38 @@ func ExecGetOutput(c *cli.Command, cmd string, args []string) ([]byte, error) {
 	}
 
 	return out, nil
+}
+
+// flakeLock represents the structure of a flake.lock file.
+type flakeLock struct {
+	Nodes map[string]flakeLockNode `json:"nodes"`
+}
+
+type flakeLockNode struct {
+	Inputs map[string]any `json:"inputs"`
+}
+
+// GetFlakeInputs reads the flake.lock file and returns the list of input names.
+func GetFlakeInputs(flakePath string) []string {
+	lockPath := filepath.Join(flakePath, "flake.lock")
+	data, err := os.ReadFile(lockPath)
+	if err != nil {
+		return nil
+	}
+
+	var lock flakeLock
+	if err := json.Unmarshal(data, &lock); err != nil {
+		return nil
+	}
+
+	root, ok := lock.Nodes["root"]
+	if !ok {
+		return nil
+	}
+
+	inputs := make([]string, 0, len(root.Inputs))
+	for name := range root.Inputs {
+		inputs = append(inputs, name)
+	}
+	return inputs
 }

@@ -3,6 +3,7 @@ package update
 
 import (
 	"context"
+	"fmt"
 
 	"code.bas.es/marcus/hei/utils"
 	"github.com/urfave/cli/v3"
@@ -10,8 +11,8 @@ import (
 
 var Command = &cli.Command{
 	Name:      "update",
-	ArgsUsage: "[flake-path...]",
-	Usage:     "Update the given flake paths or the default ones if none are provided",
+	ArgsUsage: "[inputs...]",
+	Usage:     "Update the given flake inputs or all of them if none are provided",
 	Flags: []cli.Flag{
 		&cli.BoolFlag{
 			Name:    "pull",
@@ -19,7 +20,8 @@ var Command = &cli.Command{
 			Usage:   "Do 'git pull' before updating the flake",
 		},
 	},
-	Action: updateAction,
+	Action:        updateAction,
+	ShellComplete: completeInputs,
 }
 
 func updateAction(ctx context.Context, c *cli.Command) error {
@@ -30,4 +32,11 @@ func updateAction(ctx context.Context, c *cli.Command) error {
 		}
 	}
 	return utils.ExecWithStdio(c, "nix", append([]string{"flake", "update", "--flake", flake}, c.Args().Slice()...))
+}
+
+func completeInputs(_ context.Context, c *cli.Command) {
+	flake := utils.GetFlake(c)
+	for _, input := range utils.GetFlakeInputs(flake) {
+		fmt.Println(input)
+	}
 }

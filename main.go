@@ -38,6 +38,7 @@ func run(args []string) {
 	hei.UseShortOptionHandling = true
 	hei.Version = Version
 	hei.Usage = "A simple consistent command wrapper for nix"
+	hei.EnableShellCompletion = true
 	hei.ConfigureShellCompletionCommand = func(c *cli.Command) {
 		c.Hidden = false
 		c.Usage = "Generate shell completion scripts"
