@@ -2,8 +2,8 @@ github.com/cpuguy83/go-md2man/v2 v2.0.2 h1:p1EgwI/C7NhT0JmVkwCD2ZBK8j4aeHQX2pMHH
 github.com/cpuguy83/go-md2man/v2 v2.0.2/go.mod h1:tgQtvFlXSQOSOSIRvRPT7W67SCa46tRHOmNcaadrF8o=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
-github.com/marcusramberg/cli/v3 v3.6.3-0.20260203025214-fd14621cbcd6 h1:ljLUpTSOhrsDhXWCOW/9PQzmtRZAxl/7S15itMS9/Do=
-github.com/marcusramberg/cli/v3 v3.6.3-0.20260203025214-fd14621cbcd6/go.mod h1:ysVLtOEmg2tOy6PknnYVhDoouyC/6N42TMeoMzskhso=
+github.com/marcusramberg/cli/v3 v3.6.3-0.20260204212022-5dcc605b7f0c h1:JSn6yzBkm5Pv5A+i7nKj4hbtgeQPbd1mX8CkS0rCYsA=
+github.com/marcusramberg/cli/v3 v3.6.3-0.20260204212022-5dcc605b7f0c/go.mod h1:ysVLtOEmg2tOy6PknnYVhDoouyC/6N42TMeoMzskhso=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/russross/blackfriday/v2 v2.1.0 h1:JIOH55/0cWyOuilr9/qlrm0BSXldqnqwMsf35Ld67mk=

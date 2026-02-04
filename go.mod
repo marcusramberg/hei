@@ -12,4 +12,4 @@ require (
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 )
 
-replace github.com/urfave/cli/v3 => github.com/marcusramberg/cli/v3 v3.6.3-0.20260203025214-fd14621cbcd6
+replace github.com/urfave/cli/v3 => github.com/marcusramberg/cli/v3 v3.6.3-0.20260204212022-5dcc605b7f0c
