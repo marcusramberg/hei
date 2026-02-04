@@ -14,10 +14,11 @@ import (
 var (
 	errArgMissing = errors.New("required argument missing")
 	Command       = &cli.Command{
-		Name:      "switch",
-		ArgsUsage: "[]",
-		Usage:     "Switch generation",
-		Action:    switchAction,
+		Name:          "switch",
+		ArgsUsage:     "[generation]",
+		Usage:         "Switch generation",
+		Action:        switchAction,
+		ShellComplete: completeInputs,
 	}
 )
 
@@ -31,4 +32,10 @@ func switchAction(ctx context.Context, c *cli.Command) error {
 		return fmt.Errorf("generation %s could not be found: %w", c.Args().First(), err)
 	}
 	return utils.ExecWithStdio(c, "sudo", []string{gen, "switch"})
+
+func completeInputs(ctx context.Context, c *cli.Command) {
+	gens, _ := utils.ListGenerations(ctx, c)
+	for _, gen := range *gens {
+		fmt.Println(gen.Generation)
+	}
 }
