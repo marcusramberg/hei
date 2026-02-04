@@ -7,7 +7,6 @@ import (
 
 	"code.bas.es/marcus/hei/cmd/build"
 	"code.bas.es/marcus/hei/cmd/check"
-	"code.bas.es/marcus/hei/cmd/completion"
 	"code.bas.es/marcus/hei/cmd/gc"
 	"code.bas.es/marcus/hei/cmd/gen"
 	"code.bas.es/marcus/hei/cmd/p"
@@ -40,16 +39,6 @@ func run(args []string) {
 	hei.Version = Version
 	hei.Usage = "A simple consistent command wrapper for nix"
 	hei.EnableShellCompletion = true
-	hei.ConfigureShellCompletionCommand = func(c *cli.Command) {
-		// Override fish completion to add dynamic completions, delegate others to default
-		defaultAction := c.Action
-		c.Action = func(ctx context.Context, cmd *cli.Command) error {
-			if cmd.Args().First() == "fish" {
-				return completion.FishCompletion(cmd.Root())
-			}
-			return defaultAction(ctx, cmd)
-		}
-	}
 	hei.Suggest = true
 	hei.Commands = setupCommands()
 	hei.Flags = setupFlags()

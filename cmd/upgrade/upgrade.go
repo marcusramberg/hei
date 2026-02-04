@@ -17,7 +17,7 @@ var Command = &cli.Command{
 
 func upgradeAction(ctx context.Context, c *cli.Command) error {
 	flake := utils.GetFlake(c)
-	if err := utils.ExecWithStdio(c, "nix", append([]string{"flake", "update", "--flake", flake}, c.Args().Slice()...)); err != nil {
+	if err := utils.ExecWithStdio(ctx, c, "nix", append([]string{"flake", "update", "--flake", flake}, c.Args().Slice()...)); err != nil {
 		return err
 	}
 	return rebuild.Command.Action(ctx, c)

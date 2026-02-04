@@ -16,5 +16,5 @@ var Command = &cli.Command{
 }
 
 func buildAction(ctx context.Context, c *cli.Command) error {
-	return utils.ExecWithStdio(c, "ssh", append([]string{c.Args().First(), "hei"}, c.Args().Tail()...))
+	return utils.ExecWithStdio(ctx, c, "ssh", append([]string{c.Args().First(), "hei"}, c.Args().Tail()...))
 }

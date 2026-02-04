@@ -35,7 +35,7 @@ func delAction(ctx context.Context, c *cli.Command) error {
 	}
 
 	args := append([]string{"nix-env", "--delete-generations", "--profile", "/nix/var/nix/profiles/system"}, gens...)
-	return utils.ExecWithStdio(c, "sudo", args)
+	return utils.ExecWithStdio(ctx, c, "sudo", args)
 }
 
 // parseGenerations parses a generation argument which can be either a single

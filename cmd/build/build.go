@@ -32,8 +32,8 @@ func buildAction(ctx context.Context, c *cli.Command) error {
 		}
 	}
 	if c.Args().Present() {
-		return utils.ExecWithStdio(c, builder, append([]string{"build"}, c.Args().Slice()...))
+		return utils.ExecWithStdio(ctx, c, builder, append([]string{"build"}, c.Args().Slice()...))
 	}
 	flake := utils.GetFlake(c)
-	return utils.ExecWithStdio(c, builder, []string{"build", flake})
+	return utils.ExecWithStdio(ctx, c, builder, []string{"build", flake})
 }

@@ -32,11 +32,11 @@ func testAction(ctx context.Context, c *cli.Command) error {
 		if c.Args().Len() != 1 {
 			return fmt.Errorf("takes one argument, the nix test to run: %w", errArgMissing)
 		}
-		err := utils.ExecWithStdio(c, "nix", []string{"build", fmt.Sprintf("%s#%s.driverInteractive", flake, c.Args().First())})
+		err := utils.ExecWithStdio(ctx, c, "nix", []string{"build", fmt.Sprintf("%s#%s.driverInteractive", flake, c.Args().First())})
 		if err != nil {
 			return fmt.Errorf("failed to build the interactive test driver: %w", err)
 		}
-		return utils.ExecWithStdio(c, "./result/bin/nixos-test-driver", nil)
+		return utils.ExecWithStdio(ctx, c, "./result/bin/nixos-test-driver", nil)
 	}
-	return utils.ExecWithStdio(c, "nom", []string{"build", fmt.Sprintf("%s#%s", flake, c.Args().First())})
+	return utils.ExecWithStdio(ctx, c, "nom", []string{"build", fmt.Sprintf("%s#%s", flake, c.Args().First())})
 }

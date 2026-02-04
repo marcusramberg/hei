@@ -17,5 +17,5 @@ var Command = &cli.Command{
 
 func buildAction(ctx context.Context, c *cli.Command) error {
 	flake := utils.GetFlake(c)
-	return utils.ExecWithStdio(c, "sudo", []string{"nixos-rebuild", "--rollback", "--flake", flake, "switch"})
+	return utils.ExecWithStdio(ctx, c, "sudo", []string{"nixos-rebuild", "--rollback", "--flake", flake, "switch"})
 }

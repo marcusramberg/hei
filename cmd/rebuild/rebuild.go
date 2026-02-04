@@ -106,7 +106,7 @@ func rebuildAction(ctx context.Context, c *cli.Command) error {
 	}
 
 	if update {
-		if err := utils.ExecWithStdio(c, "git", []string{"-C", flake, "pull"}); err != nil {
+		if err := utils.ExecWithStdio(ctx, c, "git", []string{"-C", flake, "pull"}); err != nil {
 			return err
 		}
 	}
@@ -130,7 +130,7 @@ func rebuildAction(ctx context.Context, c *cli.Command) error {
 	cmdArgs = append(cmdArgs, extraFlags...)
 
 	if confirm {
-		return buildConfirm(c, cmdArgs)
+		return buildConfirm(ctx, c, cmdArgs)
 	}
 
 	cmdArgs = append(cmdArgs, explicitActions...)
@@ -139,7 +139,7 @@ func rebuildAction(ctx context.Context, c *cli.Command) error {
 		cmdArgs = append(cmdArgs, "switch")
 	}
 
-	return utils.ExecWithStdio(c, "sudo", cmdArgs)
+	return utils.ExecWithStdio(ctx, c, "sudo", cmdArgs)
 }
 
 var knownActions = map[string]bool{
@@ -162,7 +162,7 @@ func isKnownAction(s string) bool {
 	return knownActions[s]
 }
 
-func buildConfirm(c *cli.Command, args []string) error {
+func buildConfirm(ctx context.Context, c *cli.Command, args []string) error {
 	// setup a temp dir to not pollute cwd with result/
 	tmpdir, err := os.MkdirTemp(os.TempDir(), "rebuild-")
 	defer func() {
@@ -188,11 +188,11 @@ func buildConfirm(c *cli.Command, args []string) error {
 		}
 	}
 
-	if err := utils.ExecWithStdio(c, "sudo", append(args, "build")); err != nil {
+	if err := utils.ExecWithStdio(ctx, c, "sudo", append(args, "build")); err != nil {
 		return err
 	}
 
-	if err := utils.ExecWithStdio(c, nvd, []string{"diff", "/nix/var/nix/profiles/system", "result"}); err != nil {
+	if err := utils.ExecWithStdio(ctx, c, nvd, []string{"diff", "/nix/var/nix/profiles/system", "result"}); err != nil {
 		return err
 	}
 
@@ -207,5 +207,5 @@ func buildConfirm(c *cli.Command, args []string) error {
 		fmt.Println("(dry-run mode, not waiting for confirmation)")
 	}
 
-	return utils.ExecWithStdio(c, "sudo", append(args, "switch"))
+	return utils.ExecWithStdio(ctx, c, "sudo", append(args, "switch"))
 }

@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -20,9 +21,9 @@ type Generation struct {
 	Current               bool   `json:"current"`
 }
 
-func ListGenerations(c *cli.Command) (*[]Generation, error) {
+func ListGenerations(ctx context.Context, c *cli.Command) (*[]Generation, error) {
 	var res *[]Generation
-	out, err := ExecGetOutput(c, "nixos-rebuild", []string{"list-generations", "--json"})
+	out, err := ExecGetOutput(ctx, c, "nixos-rebuild", []string{"list-generations", "--json"})
 	if err != nil {
 		return nil, err
 	}

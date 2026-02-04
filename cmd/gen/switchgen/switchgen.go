@@ -31,7 +31,8 @@ func switchAction(ctx context.Context, c *cli.Command) error {
 	if err != nil {
 		return fmt.Errorf("generation %s could not be found: %w", c.Args().First(), err)
 	}
-	return utils.ExecWithStdio(c, "sudo", []string{gen, "switch"})
+	return utils.ExecWithStdio(ctx, c, "sudo", []string{gen, "switch"})
+}
 
 func completeInputs(ctx context.Context, c *cli.Command) {
 	gens, _ := utils.ListGenerations(ctx, c)

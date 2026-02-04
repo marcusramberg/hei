@@ -55,13 +55,12 @@ func GetFlake(c *cli.Command) string {
 	return ""
 }
 
-func ExecWithStdio(c *cli.Command, cmd string, args []string) error {
+func ExecWithStdio(ctx context.Context, c *cli.Command, cmd string, args []string) error {
 	if c.Bool("dry-run") {
 		slog.Info("dry-run:", "cmd", cmd, "args", args)
 		return nil
 	}
-	// FIXME: This should probably take context from caller, but meh...
-	ec := exec.CommandContext(context.Background(), cmd, args...)
+	ec := exec.CommandContext(ctx, cmd, args...)
 	ec.Stdin = os.Stdin
 	ec.Stdout = os.Stdout
 	ec.Stderr = os.Stderr
@@ -72,12 +71,12 @@ func ExecWithStdio(c *cli.Command, cmd string, args []string) error {
 	return nil
 }
 
-func ExecGetOutput(c *cli.Command, cmd string, args []string) ([]byte, error) {
+func ExecGetOutput(ctx context.Context, c *cli.Command, cmd string, args []string) ([]byte, error) {
 	if c.Bool("dry-run") {
 		slog.Info("dry-run:", "cmd", cmd, "args", args)
 		return nil, nil
 	}
-	ec := exec.CommandContext(context.Background(), cmd, args...)
+	ec := exec.CommandContext(ctx, cmd, args...)
 	out, err := ec.Output()
 	if err != nil {
 		return nil, err

@@ -16,7 +16,7 @@ var Command = &cli.Command{
 }
 
 func listAction(ctx context.Context, c *cli.Command) error {
-	j, err := utils.ListGenerations(c)
+	j, err := utils.ListGenerations(ctx, c)
 	if err != nil {
 		return err
 	}

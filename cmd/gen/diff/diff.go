@@ -37,7 +37,7 @@ func buildAction(ctx context.Context, c *cli.Command) error {
 	if c.Args().Len() != 2 {
 		return fmt.Errorf("you must provide 2 argument, from and to generation: %w", errArgMissing)
 	}
-	return utils.ExecWithStdio(c, nvd, []string{
+	return utils.ExecWithStdio(ctx, c, nvd, []string{
 		"diff",
 		fmt.Sprintf("/nix/var/nix/profiles/system-%s-link", c.Args().Get(0)),
 		fmt.Sprintf("/nix/var/nix/profiles/system-%s-link", c.Args().Get(1)),

@@ -27,11 +27,11 @@ var Command = &cli.Command{
 func updateAction(ctx context.Context, c *cli.Command) error {
 	flake := utils.GetFlake(c)
 	if c.Bool("pull") {
-		if err := utils.ExecWithStdio(c, "git", []string{"-C", flake, "pull"}); err != nil {
+		if err := utils.ExecWithStdio(ctx, c, "git", []string{"-C", flake, "pull"}); err != nil {
 			return err
 		}
 	}
-	return utils.ExecWithStdio(c, "nix", append([]string{"flake", "update", "--flake", flake}, c.Args().Slice()...))
+	return utils.ExecWithStdio(ctx, c, "nix", append([]string{"flake", "update", "--flake", flake}, c.Args().Slice()...))
 }
 
 func completeInputs(_ context.Context, c *cli.Command) {
