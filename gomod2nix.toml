@@ -11,5 +11,6 @@ schema = 3
     version = "v3.1.0"
     hash = "sha256-q2eiyiyibFdT53AH72rJuyF+XLTRykPpdMc4D3Ohf/A="
   [mod."github.com/urfave/cli/v3"]
-    version = "v3.6.1"
-    hash = "sha256-q1WeKEvWoSyA0Wcan+Edjm71e0/vnPmqVvlfjUix7+8="
+    version = "v3.6.3-0.20260203025214-fd14621cbcd6"
+    hash = "sha256-1GztTNiyMWCAokHifKxfOIuniGXJKEXCpFYA/tTqiUo="
+    replaced = "github.com/marcusramberg/cli/v3"
