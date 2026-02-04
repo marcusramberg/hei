@@ -4,6 +4,8 @@ import (
 	"context"
 	"log/slog"
 	"os"
+	"os/signal"
+	"syscall"
 
 	"code.bas.es/marcus/hei/cmd/build"
 	"code.bas.es/marcus/hei/cmd/check"
@@ -43,7 +45,9 @@ func run(args []string) {
 	hei.Commands = setupCommands()
 	hei.Flags = setupFlags()
 
-	if err := hei.Run(context.Background(), args); err != nil {
+	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+	defer stop()
+	if err := hei.Run(ctx, args); err != nil {
 		slog.Error("command failed:", "err", err)
 	}
 }
