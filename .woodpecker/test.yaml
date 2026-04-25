@@ -1,0 +1,11 @@
+when:
+  - event: push
+steps:
+  - name: rebuild
+    image: nixos/nix
+    environment:
+      TEST:
+        from_secret: test
+    commands:
+      - echo $${TEST} > foo
+      - wc foo
